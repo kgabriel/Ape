@@ -32,12 +32,10 @@ public class VisualTable extends JTable {
   }
   
   public void setVisual(Visual visual) {
-//    editingCanceled(null);
     tableModel.setProperties(visual.getProperties());
   }
   
   public void setProperties(Collection<VisualProperty> properties) {
-//    editingCanceled(null);
     tableModel.setProperties(properties);
   }
 }

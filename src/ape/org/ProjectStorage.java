@@ -4,25 +4,23 @@
  */
 package ape.org;
 
-import java.util.HashMap;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *
  * @author Gabriel
  */
-public class ProjectStorage extends HashMap<Integer, ModelStorage> {
+public class ProjectStorage implements Serializable {
   
-  int freeId;
+  Collection<ModelStorage> models;
   
   public ProjectStorage() {
-    freeId = 0;
+    models = new ArrayList<>();
   }
   
-  public void addNewStorage(ModelStorage n) {
-    put(nextFreeId(), n);
-  }
-  
-  private int nextFreeId() {
-    return freeId++;
+  public void addModel(ModelStorage model) {
+    models.add(model);
   }
 }
