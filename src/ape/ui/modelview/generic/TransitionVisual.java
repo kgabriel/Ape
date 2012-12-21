@@ -4,6 +4,8 @@
  */
 package ape.ui.modelview.generic;
 
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import ape.petri.generic.net.Data;
 import ape.petri.generic.net.DataChangeListener;
 import ape.petri.generic.net.Transition;
@@ -49,7 +51,7 @@ public abstract class TransitionVisual extends NodeVisual implements DataChangeL
   }
   
   private void initProperties() {
-    addProperty(new VisualProperty(this, EnumVisualPropertyType.Integer, "Width", true) {
+    addProperty(new Property(this, EnumPropertyType.Integer, "Width", true) {
      @Override
       public Object getValue() {
         return getWidth();

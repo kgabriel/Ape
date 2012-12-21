@@ -37,10 +37,12 @@ public class UI implements ModelViewListener {
   protected Ape theApe;
   protected CommandManager commandManager;
   protected MainFrame mainFrame;
+  protected MainMenu mainMenu;
+  protected ProjectTree projectTree;
   protected ModelViewCanvas modelViewCanvas;
   protected ModelViewToolBar modelViewToolbar;
   protected ModelTreeView modelTreeView;
-  protected VisualTable visualTable;
+  protected PropertyTable propertyTable;
   private Collection<ModelViewListener> modelViewListeners;
   
   public UI(Ape ape) {
@@ -68,6 +70,12 @@ public class UI implements ModelViewListener {
   private void initComponents() {
     mainFrame = new MainFrame();
     
+    mainMenu = new MainMenu(theApe);
+    mainFrame.setJMenuBar(mainMenu);
+    
+    projectTree = new ProjectTree(theApe.projects, this);
+    mainFrame.addTo(projectTree, MainFrame.LEFT_PANEL, false);
+    
     modelViewCanvas = new ModelViewCanvas(this);
     mainFrame.addTo(modelViewCanvas, MainFrame.CENTER_PANEL, false);
     
@@ -78,11 +86,13 @@ public class UI implements ModelViewListener {
     modelTreeView = new ModelTreeView(this);
     mainFrame.addTo(new JScrollPane(modelTreeView), MainFrame.TOP_RIGHT_PANEL, false);
     
-    visualTable = new VisualTable(this);
-    mainFrame.addTo(new JScrollPane(visualTable), MainFrame.BOTTOM_RIGHT_PANEL, false);
+    propertyTable = new PropertyTable(this);
+    mainFrame.addTo(new JScrollPane(propertyTable), MainFrame.BOTTOM_RIGHT_PANEL, false);
     
     mainFrame.setVisible(true);
     mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+    
+    mainFrame.pack();
   }
   
   public static void setWidthStrict(Component c, int width) {
@@ -140,8 +150,8 @@ public class UI implements ModelViewListener {
     return modelViewToolbar;
   }
   
-  public VisualTable getVisualTable() {
-    return visualTable;
+  public PropertyTable getVisualTable() {
+    return propertyTable;
   }
   
   public void addModelViewListener(ModelViewListener listener) {

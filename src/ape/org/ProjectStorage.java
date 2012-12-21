@@ -4,23 +4,38 @@
  */
 package ape.org;
 
-import java.io.Serializable;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.List;
 
 /**
  *
  * @author Gabriel
  */
-public class ProjectStorage implements Serializable {
-  
-  Collection<ModelStorage> models;
-  
+public class ProjectStorage extends StorageContainer<ModelStorage> {
+
   public ProjectStorage() {
-    models = new ArrayList<>();
+    super("Project");
+  }
+
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = new ArrayList<>();
+    properties.add(new Property(this, EnumPropertyType.String, "Project Name", true) {
+      @Override
+      public Object getValue() {
+        return getName();
+      }
+
+      @Override
+      public void setValue(Object value) {
+        setName((String) value);
+      }
+    });
+    return properties;
   }
   
-  public void addModel(ModelStorage model) {
-    models.add(model);
-  }
+  
 }

@@ -4,6 +4,9 @@
  */
 package ape.ui.modelview.generic;
 
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
 import ape.petri.generic.net.DataChangeListener;
 import ape.petri.generic.net.EnumArcDirection;
 import ape.petri.generic.net.ArcCollection;
@@ -122,10 +125,10 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
   private void initProperties() {
     /* arc direction: pre or post arc */
     String dir = (direction == EnumArcDirection.PT ? "Pre Arc" : "Post Arc");
-    addProperty(new VisualPropertyConstant(this, EnumVisualPropertyType.String, "Arc Type", dir));
+    addProperty(new PropertyConstant(this, EnumPropertyType.String, "Arc Type", dir));
     
     /* place of the arc */
-    addProperty(new VisualProperty(this, EnumVisualPropertyType.String, "Place", false) {
+    addProperty(new Property(this, EnumPropertyType.String, "Place", false) {
       @Override
       public Object getValue() {
         return placeVisual.getDataName();
@@ -136,7 +139,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     });
     
     /* transition of the arc */
-   addProperty(new VisualProperty(this, EnumVisualPropertyType.String, "Transition", false) {
+   addProperty(new Property(this, EnumPropertyType.String, "Transition", false) {
       @Override
       public Object getValue() {
         return transitionVisual.getDataName();
@@ -147,7 +150,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     });
    
    /* position of the label */
-   addProperty(new VisualProperty(this, EnumVisualPropertyType.Interval, "Label Position", true) {
+   addProperty(new Property(this, EnumPropertyType.Interval, "Label Position", true) {
       @Override
       public Object getValue() {
         return labelPosition;

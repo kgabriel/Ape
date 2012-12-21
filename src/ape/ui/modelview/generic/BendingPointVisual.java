@@ -4,11 +4,13 @@
  */
 package ape.ui.modelview.generic;
 
+import ape.util.Property;
 import ape.petri.generic.net.EnumArcDirection;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
 import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -39,7 +41,7 @@ public class BendingPointVisual extends Visual {
   }
 
   @Override
-  public Collection<VisualProperty> getProperties() {
+  public List<Property> getProperties() {
     return parent.getProperties();
   }
   

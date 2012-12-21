@@ -8,17 +8,17 @@ import ape.ui.UI;
 import ape.ui.control.CommandReceiver;
 import ape.ui.control.EnumCommandReceiverType;
 import ape.ui.modelview.generic.ModelView;
-import java.awt.Canvas;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.*;
+import javax.swing.JComponent;
 
 /**
  * A canvas that is used to display {@link ModelView}s. 
  * @author Gabriel
  */
-public class ModelViewCanvas extends Canvas implements CommandReceiver, ComponentListener, 
+public class ModelViewCanvas extends JComponent implements CommandReceiver, ComponentListener, 
         MouseMotionListener, MouseListener {
   
   /**
@@ -102,10 +102,18 @@ public class ModelViewCanvas extends Canvas implements CommandReceiver, Componen
   @Override
   public void paint(Graphics g) {
     if(modelView != null) {
-      modelView.draw();
+      modelView.draw(g);
     }
   }
+
+  @Override
+  protected void paintComponent(Graphics g) {
+//    super.paintComponent(g);
+    paint(g);
+  }
   
+  
+
   @Override
   public void componentResized(ComponentEvent e) {
     if(modelView != null) {

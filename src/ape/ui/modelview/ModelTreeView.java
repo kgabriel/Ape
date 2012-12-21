@@ -63,6 +63,7 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
   
   public void clearModelTree() {
     typeRoots.clear();
+    tree.clear();
   }
   
   public void updateModelTree() {
@@ -192,6 +193,10 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
   @Override
   public void valueChanged(TreeSelectionEvent e) {
     IconTreeNode node = (IconTreeNode) tree.getLastSelectedPathComponent();
+    if(typeRoots.containsValue(node)) {
+      tree.expandNode(node);
+      return;
+    }
     ModelElement m = nodeElements.get(node);
     if(m == null) return;
     ModelView modelView = ui.getActiveModelView();

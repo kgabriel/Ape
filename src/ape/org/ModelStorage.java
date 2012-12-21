@@ -4,23 +4,32 @@
  */
 package ape.org;
 
+import ape.petri.generic.EnumModelType;
 import ape.petri.generic.Model;
 import ape.ui.modelview.generic.ModelView;
-import java.io.Serializable;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
+import java.util.List;
 
 /**
  *
  * @author Gabriel
  */
-public class ModelStorage implements Serializable {
-  private String name;
+public class ModelStorage extends Storage {
+  private EnumModelType type;
   private Model model;
   private ModelView view; 
 
-  public ModelStorage(Model net, ModelView view, String name) {
-    this.model = net;
+  public ModelStorage(EnumModelType type, Model model, ModelView view) {
+    super(type.getName());
+    this.type = type;
+    this.model = model;
     this.view = view;
-    this.name = name;
+  }
+
+  public EnumModelType getType() {
+    return type;
   }
   
   public Model getModel() {
@@ -31,11 +40,20 @@ public class ModelStorage implements Serializable {
     return view;
   }
 
-  public String getName() {
-    return name;
-  }
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = view.getProperties();
+    properties.add(0, new Property(this, EnumPropertyType.String, "Model Name", true) {
+      @Override
+      public Object getValue() {
+        return getName();
+      }
 
-  public void setName(String name) {
-    this.name = name;
+      @Override
+      public void setValue(Object value) {
+        setName((String) value);
+      }
+    });
+    return properties;
   }
 }

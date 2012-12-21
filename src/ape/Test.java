@@ -5,6 +5,8 @@
 package ape;
 
 import ape.org.ModelStorage;
+import ape.org.ProjectStorage;
+import ape.petri.generic.EnumModelType;
 import ape.petri.generic.Model;
 import ape.petri.generic.net.Net;
 import ape.petri.generic.net.Place;
@@ -33,6 +35,16 @@ public class Test extends Thread implements KeyListener {
     running = true;
     this.ape = ape;
     ape.ui.getModelViewCanvas().addKeyListener(this);
+  }
+  
+  public static ProjectStorage loadProject(String fileName, UI ui) {
+    ProjectStorage projectStorage = (ProjectStorage) load(fileName);
+    if(projectStorage == null) return null;
+    for(ModelStorage model : projectStorage.getStorages()) {
+      ModelView view = model.getView();
+      view.setUI(ui);
+    }
+    return projectStorage;
   }
   
   public static ModelStorage loadModel(String fileName, UI ui) {
@@ -70,22 +82,25 @@ public class Test extends Thread implements KeyListener {
   }
   
   public void test() {
-    String file = "d:\\code\\java\\ape\\test\\test.net";
-    ModelStorage modelStorage = (ModelStorage) loadModel(file, ape.ui);
-    if(modelStorage == null) {
-      System.out.println("No net obtained. Create new one.");
+    String file = "d:\\code\\java\\ape\\test\\test.ape";
+    ProjectStorage projectStorage = (ProjectStorage) loadProject(file, ape.ui);
+    if(projectStorage == null) {
+      System.out.println("No project obtained. Create new one.");
       Net net = new PTNet();
       Place p = net.addPlace(new PTPlaceData("Place 0 \n: wavelet")); //\rwith \rsome extra \rtext\rand extra lines \r\rand whatnotall...
       Transition t = net.addTransition(new PTTransitionData("Transition 0"));
-      modelStorage = new ModelStorage(net, new ModelView(ape.ui, net), "Net 0");
-      save(modelStorage, file);
+      ModelStorage modelStorage = new ModelStorage(EnumModelType.Net, net, new ModelView(ape.ui, net));
+      projectStorage = new ProjectStorage();
+      projectStorage.addStorage(modelStorage);
+      save(projectStorage, file);
     }
+    ape.projects.addStorage(projectStorage);
 
-    ape.ui.setActiveModelView(modelStorage.getView());
+//    ape.ui.setActiveModelView(modelStorage.getView());
     
-    ModelView modelView = modelStorage.getView();
+//    ModelView modelView = modelStorage.getView();
 
-    modelView.repaint();
+//    modelView.repaint();
     
 //    start();
   }

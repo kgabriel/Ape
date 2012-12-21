@@ -4,7 +4,11 @@
  */
 package ape.ui.modelview.generic;
 
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
 import ape.math.Vector2D;
+import ape.util.PropertyContainer;
 import java.awt.*;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,7 +23,7 @@ import java.util.HashSet;
  * is aware of all of these operations.
  * @author Gabriel
  */
-public abstract class Visual implements Serializable {
+public abstract class Visual implements PropertyContainer, Serializable {
   
   public final static int STATUS_NORMAL = 0;
   public final static int STATUS_HOVER = 1;
@@ -90,7 +94,7 @@ public abstract class Visual implements Serializable {
   private Collection<Visual> selectableChildVisuals;
   
   
-  private java.util.List<VisualProperty> properties;
+  private java.util.List<Property> properties;
   
   /**
    * Construct a new <code>Visual</code> with the specific superior 
@@ -157,20 +161,21 @@ public abstract class Visual implements Serializable {
     return new HashSet<>(selectableChildVisuals);
   }
   
-  protected void addProperty(VisualProperty prop) {
+  protected void addProperty(Property prop) {
     properties.add(prop);
   }
   
-  protected void addPropertyInFront(VisualProperty prop) {
+  protected void addPropertyInFront(Property prop) {
     properties.add(0, prop);
   }
   
-  public Collection<VisualProperty> getProperties() {
+  @Override
+  public java.util.List<Property> getProperties() {
     return properties;
   }
   
   private void initProperties() {
-    addProperty(new VisualPropertyConstant(this, EnumVisualPropertyType.String, "Element Type", getElementTypeName()));
+    addProperty(new PropertyConstant(this, EnumPropertyType.String, "Element Type", getElementTypeName()));
   }
   
   public void redraw(int status) {

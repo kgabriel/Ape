@@ -7,6 +7,8 @@ package ape.ui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
 /**
  *
@@ -179,4 +181,5 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JPanel topPane;
     private javax.swing.JPanel topRightPane;
     // End of variables declaration//GEN-END:variables
+
 }

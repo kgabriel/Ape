@@ -4,7 +4,7 @@
  */
 package ape;
 
-import ape.org.ProjectStorage;
+import ape.org.ProjectCollection;
 import ape.ui.UI;
 
 
@@ -14,7 +14,7 @@ import ape.ui.UI;
  */
 public class Ape {
 
-  protected ProjectStorage modelStorages;
+  public ProjectCollection projects;
   public UI ui;
   
   /**
@@ -26,12 +26,12 @@ public class Ape {
   }
   
   public Ape() {
+    projects = new ProjectCollection();
     init();
-    new Test(this).test();
+//    new Test(this).test();
   }
   
   private void init() {
-    modelStorages = new ProjectStorage();
     
     // open main frame
     ui = new UI(this);

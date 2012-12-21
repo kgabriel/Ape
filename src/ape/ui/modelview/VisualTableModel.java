@@ -6,7 +6,7 @@ package ape.ui.modelview;
 
 import ape.ui.UI;
 import ape.ui.modelview.generic.Visual;
-import ape.ui.modelview.generic.VisualProperty;
+import ape.util.Property;
 import java.util.Collection;
 import javax.swing.table.DefaultTableModel;
 
@@ -16,7 +16,7 @@ import javax.swing.table.DefaultTableModel;
  */
 public class VisualTableModel extends DefaultTableModel {
   
-  private Collection<VisualProperty> properties;
+  private Collection<Property> properties;
   private UI ui;
 
   public VisualTableModel(UI ui) {
@@ -30,7 +30,7 @@ public class VisualTableModel extends DefaultTableModel {
     }
   }
   
-  public void setProperties(Collection<VisualProperty> properties) {
+  public void setProperties(Collection<Property> properties) {
     this.properties = properties;
     refresh();
   }
@@ -41,8 +41,8 @@ public class VisualTableModel extends DefaultTableModel {
   }
   
   private void fillTable() {
-    for(VisualProperty prop : properties) {
-      addRow(prop.getName(), prop.getValue());
+    for(Property prop : properties) {
+      addRow(prop.getKey(), prop.getValue());
     }
   }
   
@@ -54,9 +54,9 @@ public class VisualTableModel extends DefaultTableModel {
     insertRow(row, new Object[] { propertyName, value });
   }
   
-  public VisualProperty getPropertyAt(int row) {
+  public Property getPropertyAt(int row) {
     if(properties == null) return null;
-    return (VisualProperty) properties.toArray()[row];
+    return (Property) properties.toArray()[row];
   }
   
   
@@ -69,7 +69,7 @@ public class VisualTableModel extends DefaultTableModel {
   @Override
   public void setValueAt(Object value, int row, int col) {
     if(col != 1) return;
-    VisualProperty prop = getPropertyAt(row);
+    Property prop = getPropertyAt(row);
     try {
       switch(prop.getType()) {
         case String:

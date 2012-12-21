@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ape.ui.modelview.generic;
+package ape.util;
 
 import java.io.Serializable;
 
@@ -10,24 +10,24 @@ import java.io.Serializable;
  *
  * @author Gabriel
  */
-public abstract class VisualProperty implements Serializable {
+public abstract class Property implements Serializable {
 
   protected Object object;
-  private EnumVisualPropertyType type;
-  private String name;
+  private EnumPropertyType type;
+  private String key;
   private boolean editable;
 
   /**
-   * Constructor for a <code>VisualProperty</code> of a specified object.
+   * Constructor for a <code>Property</code> of a specified object.
    * @param object the object that has this property
    * @param type the type of this property (for example string or integer)
-   * @param name the name of this property
+   * @param key the key/name of this property
    * @param editable <code>true</code> if this property can be edited by the user
    */
-  public VisualProperty(Object object, EnumVisualPropertyType type, String name, boolean editable) {
+  public Property(Object object, EnumPropertyType type, String key, boolean editable) {
     this.object = object;
     this.type = type;
-    this.name = name;
+    this.key = key;
     this.editable = editable;
   }
   
@@ -43,7 +43,7 @@ public abstract class VisualProperty implements Serializable {
    * Returns the property type of this property (for example string or integer).
    * @return the type of this property
    */
-  public EnumVisualPropertyType getType() {
+  public EnumPropertyType getType() {
     return type;
   }
   
@@ -51,8 +51,8 @@ public abstract class VisualProperty implements Serializable {
    * Returns the name of this property as set in the constructor.
    * @return the name of this property
    */
-  public String getName() {
-    return name;
+  public String getKey() {
+    return key;
   }
 
   /**

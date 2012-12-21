@@ -4,6 +4,9 @@
  */
 package ape.ui.modelview.generic;
 
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
 import ape.petri.generic.EnumModelType;
 import ape.petri.generic.Model;
 import ape.petri.generic.ModelElement;
@@ -12,6 +15,7 @@ import ape.ui.UI;
 import ape.ui.modelview.EnumModelViewAction;
 import ape.ui.modelview.ModelViewCanvas;
 import ape.ui.modelview.ModelViewListener;
+import ape.util.PropertyContainer;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -57,7 +61,7 @@ import java.util.*;
  * for all drawing operations. 
  * @author Gabriel
  */
-public class ModelView implements Serializable {
+public class ModelView implements PropertyContainer, Serializable {
 
   /**
    * The center of the view in <i>view coordinates</i>. As long this was not set manually,
@@ -138,7 +142,7 @@ public class ModelView implements Serializable {
   /**
    * The <code>ModelViewCanvas</code>, displaying this <code>ModelView</code>.
    */
-  private ModelViewCanvas canvas;
+  private transient ModelViewCanvas canvas;
   
   /**
    * The image, where the contained {@link Visual}s of this <code>ModelView</code> are drawn to.
@@ -664,13 +668,13 @@ public class ModelView implements Serializable {
    * Draws all content of this <code>ModelView</code> first on its off-screen image, and draws
    * all content of the off-screen image on the <code>ModelViewCanvas</code>.
    */
-  public void draw() {
+  public void draw(Graphics g) {
     drawBackground();
     drawGrid();
     drawVisuals();
     drawSelection();
     drawArcInCreation();
-    canvas.getGraphics().drawImage(image, 0, 0, canvas);
+    g.drawImage(image, 0, 0, canvas);
     ui.getVisualTable().refresh();
   }
   
@@ -1165,22 +1169,23 @@ public class ModelView implements Serializable {
   
   public void selectionUpdated() {
     if(selectedVisuals.isEmpty()) {
-      ui.getVisualTable().setProperties(getProperties());
+      ui.getVisualTable().displayProperties(this);
       return;
     }
 
     Visual v = (Visual) selectedVisuals.toArray()[0];
-    ui.getVisualTable().setVisual(v);
+    ui.getVisualTable().displayProperties(v);
   }
   
-  public Collection<VisualProperty> getProperties() {
-    Collection<VisualProperty> props = new ArrayList<>();
+  @Override
+  public List<Property> getProperties() {
+    List<Property> props = new ArrayList<>();
     
-    props.add(new VisualPropertyConstant(this, EnumVisualPropertyType.String, "Model Type", model.getModelType().getName()));
+    props.add(new PropertyConstant(this, EnumPropertyType.String, "Model Type", model.getModelType().getName()));
     
-    props.add(new VisualPropertyConstant(this, EnumVisualPropertyType.String, "Net Class", model.getNetType().getName()));
+    props.add(new PropertyConstant(this, EnumPropertyType.String, "Net Class", model.getNetType().getName()));
     
-    props.add(new VisualProperty(this, EnumVisualPropertyType.Integer, "View Center X", true) {
+    props.add(new Property(this, EnumPropertyType.Integer, "View Center X", true) {
 
       @Override
       public Object getValue() {
@@ -1193,7 +1198,7 @@ public class ModelView implements Serializable {
       }
     });
 
-    props.add(new VisualProperty(this, EnumVisualPropertyType.Integer, "View Center Y", true) {
+    props.add(new Property(this, EnumPropertyType.Integer, "View Center Y", true) {
       @Override
       public Object getValue() {
         return viewCenter.y;
@@ -1205,7 +1210,7 @@ public class ModelView implements Serializable {
       }
     });
     
-    props.add(new VisualProperty(this, EnumVisualPropertyType.Interval, "Scaling", true) {
+    props.add(new Property(this, EnumPropertyType.Interval, "Scaling", true) {
       @Override
       public Object getValue() {
         double range = VisualGlobalValues.modelMaxScale - VisualGlobalValues.modelMinScale;

@@ -4,8 +4,8 @@
  */
 package ape.ui.modelview;
 
-import ape.ui.modelview.generic.EnumVisualPropertyType;
-import ape.ui.modelview.generic.VisualProperty;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.BoundedRangeModel;
@@ -26,10 +26,10 @@ public class VisualTableCellRenderer implements TableCellRenderer {
                                                  boolean hasFocus, int row, int column) {
     
     /* get type of property and if it is editable*/
-    EnumVisualPropertyType type = EnumVisualPropertyType.String;
+    EnumPropertyType type = EnumPropertyType.String;
     boolean editable = false;
     if(column == 1) {
-      VisualProperty prop = ((VisualTableModel) table.getModel()).getPropertyAt(row);
+      Property prop = ((VisualTableModel) table.getModel()).getPropertyAt(row);
       if(prop != null) {
         type = prop.getType();
         editable = prop.isEditable();

@@ -24,6 +24,12 @@ public class IconTree extends JTree {
     setModel(treeModel);
     setCellRenderer(new IconTreeCellRenderer());
   }
+  
+  public void clear() {
+    for(int i=treeModel.getChildCount(root)-1;i>=0;i--) {
+      treeModel.removeNodeFromParent((IconTreeNode) treeModel.getChild(root, i));
+    }
+  }
 
   public void refresh() {
     refresh(root);

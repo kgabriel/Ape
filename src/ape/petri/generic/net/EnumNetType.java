@@ -5,6 +5,7 @@
 package ape.petri.generic.net;
 
 import ape.petri.pt.PTDataFactory;
+import ape.petri.pt.PTNet;
 
 /**
  *

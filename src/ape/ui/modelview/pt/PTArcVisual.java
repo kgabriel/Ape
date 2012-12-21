@@ -4,6 +4,8 @@
  */
 package ape.ui.modelview.pt;
 
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import ape.petri.generic.net.ArcCollection;
 import ape.petri.generic.net.ArcElement;
 import ape.petri.generic.net.EnumArcDirection;
@@ -23,7 +25,7 @@ public class PTArcVisual extends ArcVisual {
   }
   
   private void initProperties() {
-    addProperty(new VisualProperty(this, EnumVisualPropertyType.Integer, "Arc Weight", true) {
+    addProperty(new Property(this, EnumPropertyType.Integer, "Arc Weight", true) {
 
       @Override
       public Object getValue() {

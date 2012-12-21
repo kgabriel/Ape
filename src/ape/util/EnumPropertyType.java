@@ -2,17 +2,17 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ape.ui.modelview.generic;
+package ape.util;
 
 /**
  *
  * @author Gabriel
  */
-public enum EnumVisualPropertyType {
+public enum EnumPropertyType {
 
   String,
   Integer,
   Interval;
 
-  EnumVisualPropertyType() {}      
+  EnumPropertyType() {}      
 }

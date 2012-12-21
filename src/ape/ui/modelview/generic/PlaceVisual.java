@@ -4,6 +4,8 @@
  */
 package ape.ui.modelview.generic;
 
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import ape.math.Ray2D;
 import ape.math.Vector2D;
 import ape.petri.generic.net.Data;
@@ -51,7 +53,7 @@ public abstract class PlaceVisual extends NodeVisual implements DataChangeListen
   }
   
   private void initProperties() {
-    addProperty(new VisualProperty(this, EnumVisualPropertyType.Interval, "Label Angle", true) {
+    addProperty(new Property(this, EnumPropertyType.Interval, "Label Angle", true) {
       @Override
       public Object getValue() {
         return labelAngle / (2 * Math.PI);

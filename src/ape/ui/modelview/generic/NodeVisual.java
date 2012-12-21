@@ -4,6 +4,8 @@
  */
 package ape.ui.modelview.generic;
 
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.Collection;
@@ -34,7 +36,7 @@ public abstract class NodeVisual extends Visual {
   }
   
   private void initProperties() {
-    addProperty(new VisualProperty(this, EnumVisualPropertyType.String, "Name", true) {
+    addProperty(new Property(this, EnumPropertyType.String, "Name", true) {
       @Override
       public Object getValue() {
         return getDataName();
@@ -46,7 +48,7 @@ public abstract class NodeVisual extends Visual {
       }      
     });
     
-    addProperty(new VisualProperty(this, EnumVisualPropertyType.Integer, "Element ID", false) {
+    addProperty(new Property(this, EnumPropertyType.Integer, "Element ID", false) {
       @Override
       public Object getValue() {
         return getNodeId();
@@ -57,7 +59,7 @@ public abstract class NodeVisual extends Visual {
     });
 
    
-    addProperty(new VisualProperty(this, EnumVisualPropertyType.Integer, "X", true) {
+    addProperty(new Property(this, EnumPropertyType.Integer, "X", true) {
       @Override
       public Object getValue() {
         return (int) getCenterX();
@@ -69,7 +71,7 @@ public abstract class NodeVisual extends Visual {
       }      
     });
    
-    addProperty(new VisualProperty(this, EnumVisualPropertyType.Integer, "Y", true) {
+    addProperty(new Property(this, EnumPropertyType.Integer, "Y", true) {
       @Override
       public Object getValue() {
         return (int) getCenterY();

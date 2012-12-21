@@ -5,7 +5,7 @@
 package ape.ui.modelview;
 
 import ape.ui.UI;
-import ape.ui.modelview.generic.VisualProperty;
+import ape.util.Property;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.GridLayout;
@@ -22,7 +22,7 @@ import javax.swing.table.TableCellEditor;
 public class VisualTableCellEditor extends AbstractCellEditor implements TableCellEditor, 
         ActionListener, KeyListener, WindowListener, ChangeListener, FocusListener {
 
-  private VisualProperty cellProperty;
+  private Property cellProperty;
   private Object value;
   private JDialog editFrame;
   private JTextArea editArea;
@@ -92,7 +92,7 @@ public class VisualTableCellEditor extends AbstractCellEditor implements TableCe
     if(e.getActionCommand().equals(EDIT_TEXT_ACTION)) {
       editFrame = new JDialog(ui.getMainFrame(),true);
       editFrame.addWindowListener(this);
-      editFrame.setTitle("Edit " + cellProperty.getName());
+      editFrame.setTitle("Edit " + cellProperty.getKey());
       editArea = new JTextArea(cellProperty.getValue().toString(),3,100);
       editArea.addKeyListener(this);
       editFrame.setLayout(new BorderLayout());
