@@ -40,7 +40,7 @@ public abstract class DataFactory implements Serializable {
    * Creates a default arc element data for the net type of this factory.
    * @return a new arc element data with default content
    */
-  public abstract ArcElementData createDefaultArcElementData(ArcCollection collection);
+  public abstract ArcElementData createDefaultArcElementData();
   
   protected String nextPlaceName() {
     return "Place " + nextPlaceNumber++;

@@ -4,7 +4,7 @@
  */
 package ape.petri.pt;
 
-import ape.petri.generic.net.EnumNetType;
+import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.PlaceData;
 
 /**

@@ -8,7 +8,7 @@ import ape.Ape;
 import ape.ui.control.CommandEvent;
 import ape.ui.control.EnumCommandReceiverType;
 import ape.ui.control.EnumInvocationType;
-import ape.ui.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.generic.ModelView;
 import java.awt.event.MouseWheelEvent;
 
 /**
@@ -30,6 +30,7 @@ public class CommandModelViewScale implements Command {
   @Override
   public void invoke(CommandEvent e, Ape ape) {
     ModelView modelView = ape.ui.getActiveModelView();
+    if(modelView == null) return;
     
     MouseWheelEvent m = (MouseWheelEvent) e.getInputEvent();
     double amount = m.getPreciseWheelRotation();

@@ -4,10 +4,9 @@
  */
 package ape.petri.pt;
 
-import ape.petri.generic.net.EnumNetType;
+import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.Net;
-import ape.petri.validity.InvalidityReason;
-import java.util.Collection;
+import ape.petri.validity.Validity;
 
 /**
  *
@@ -20,12 +19,9 @@ public class PTNet extends Net {
   }
 
   @Override
-  public boolean isValid() {
-    return true;
+  public Validity validate() {
+    return new Validity(true);
   }
 
-  @Override
-  public Collection<InvalidityReason> getInvalidityReasons() {
-    return null;
-  }
+  
 }

@@ -4,7 +4,8 @@
  */
 package ape.petri.generic;
 
-import ape.petri.generic.net.EnumNetType;
+import ape.petri.ahl.AHLNet;
+import ape.petri.ahl.instantiation.AHLInstantiation;
 import ape.petri.generic.net.Net;
 import ape.petri.pt.PTNet;
 
@@ -39,7 +40,7 @@ public enum EnumModelType {
         return createNet(netType);
       case Rule:
       default:
-        throw new UnsupportedOperationException("Model creation not yet implemented for model type" + this);
+        throw new UnsupportedOperationException("Model creation not yet implemented for model type " + this);
     }
   }
   
@@ -48,8 +49,11 @@ public enum EnumModelType {
       case PTNet:
         return new PTNet();
       case AHLNet:
+        return new AHLNet();
+      case AHLInstantiation:
+        return new AHLInstantiation();
       default:
-        throw new UnsupportedOperationException("Net creation not yet implemented for net type" + netType);
+        throw new UnsupportedOperationException("Net creation not yet implemented for net type " + netType);
     }
   }
   

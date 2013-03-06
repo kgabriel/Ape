@@ -10,7 +10,7 @@ package ape.petri.generic.net;
  */
 public enum EnumElementType {
 
-  Arc("Arc"),
+  ArcElement("ArcElement"),
   ArcCollection("ArcCollection"),
   Place("Place"),
   Transition("Transition");

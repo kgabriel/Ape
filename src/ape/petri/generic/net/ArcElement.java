@@ -4,6 +4,8 @@
  */
 package ape.petri.generic.net;
 
+import ape.util.aml.AMLNode;
+
 /**
  * An <code>ArcElement</code> is a single arc between a place and a transition.
  * The <code>ArcElement</code> is always contained in an {@link ArcCollection},
@@ -138,6 +140,24 @@ public class ArcElement implements NetElement, Arc {
 
   @Override
   public EnumElementType getElementType() {
-    return EnumElementType.Arc;
+    return EnumElementType.ArcElement;
+  }
+
+  @Override
+  public String getAMLTagName() {
+    return "ArcElement";
+  }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = new AMLNode(getAMLTagName());
+    node.addChild(data.getAMLNode());
+    return node;
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    AMLNode dataNode = node.getFirstChild("Data");
+    data.readAMLNode(dataNode);
   }
 }

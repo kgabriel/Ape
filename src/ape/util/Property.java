@@ -10,13 +10,18 @@ import java.io.Serializable;
  *
  * @author Gabriel
  */
-public abstract class Property implements Serializable {
+public abstract class Property implements Comparable<Property>, Serializable {
 
   protected Object object;
   private EnumPropertyType type;
   private String key;
   private boolean editable;
+  private String category;
 
+  public static final String CATEGORY_PROPERTIES = "Properties";
+  public static final String CATEGORY_VALUES = "Values";
+  public static final String CATEGORY_VIEW = "View";
+  
   /**
    * Constructor for a <code>Property</code> of a specified object.
    * @param object the object that has this property
@@ -24,11 +29,16 @@ public abstract class Property implements Serializable {
    * @param key the key/name of this property
    * @param editable <code>true</code> if this property can be edited by the user
    */
-  public Property(Object object, EnumPropertyType type, String key, boolean editable) {
+  public Property(String category, Object object, EnumPropertyType type, String key, boolean editable) {
+    this.category = category;
     this.object = object;
     this.type = type;
     this.key = key;
     this.editable = editable;
+  }
+
+  public String getCategory() {
+    return category;
   }
   
   /**
@@ -76,4 +86,11 @@ public abstract class Property implements Serializable {
   public boolean isEditable() {
     return editable;
   }
+
+  @Override
+  public int compareTo(Property o) {
+    return this.key.compareTo(o.key);
+  }
+  
+  
 }

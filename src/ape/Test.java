@@ -15,7 +15,7 @@ import ape.petri.pt.PTNet;
 import ape.petri.pt.PTPlaceData;
 import ape.petri.pt.PTTransitionData;
 import ape.ui.UI;
-import ape.ui.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.generic.ModelView;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.*;

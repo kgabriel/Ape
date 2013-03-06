@@ -4,8 +4,8 @@
  */
 package ape.ui.control.settings;
 
-import javax.swing.table.DefaultTableModel;
 import ape.ui.control.CommandManager;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *

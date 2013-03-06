@@ -4,8 +4,11 @@
  */
 package ape;
 
+import ape.org.ModelStorage;
 import ape.org.ProjectCollection;
+import ape.org.ProjectStorage;
 import ape.ui.UI;
+import jpl.fli.Prolog;
 
 
 /**
@@ -22,13 +25,24 @@ public class Ape {
     */
   public static void main(String[] args) {
 
-    Ape ape = new Ape();
+    Ape theApe = new Ape();
+    ape.prolog.Prolog.initialize();
+//    PLTest.test();
   }
   
   public Ape() {
     projects = new ProjectCollection();
     init();
-//    new Test(this).test();
+  }
+  
+  public ProjectStorage getActiveProject() {
+    return projects.getActiveStorage();
+  }
+  
+  public ModelStorage getActiveModel() {
+    ProjectStorage activeProject = getActiveProject();
+    if(activeProject == null) return null;
+    return activeProject.getActiveStorage();
   }
   
   private void init() {

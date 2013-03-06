@@ -4,9 +4,11 @@
  */
 package ape.org;
 
+import ape.petri.generic.EnumModelType;
 import ape.util.EnumPropertyType;
 import ape.util.Property;
 import ape.util.PropertyConstant;
+import ape.util.aml.AMLNode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +25,8 @@ public class ProjectStorage extends StorageContainer<ModelStorage> {
   @Override
   public List<Property> getProperties() {
     List<Property> properties = new ArrayList<>();
-    properties.add(new Property(this, EnumPropertyType.String, "Project Name", true) {
+    properties.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Entity Type", "Project"));
+    properties.add(new Property(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Name", true) {
       @Override
       public Object getValue() {
         return getName();
@@ -35,6 +38,22 @@ public class ProjectStorage extends StorageContainer<ModelStorage> {
       }
     });
     return properties;
+  }
+
+  @Override
+  public String getAMLTagName() {
+    return "ProjectStorage";
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    super.readAMLNode(node);
+    clear();
+    for(AMLNode child : node.getChildren()) {
+      ModelStorage modelStorage = new ModelStorage(EnumModelType.Rule, null, null);
+      modelStorage.readAMLNode(child);
+      addStorage(modelStorage);
+    }
   }
   
   

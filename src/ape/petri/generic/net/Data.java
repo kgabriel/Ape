@@ -4,6 +4,9 @@
  */
 package ape.petri.generic.net;
 
+import ape.petri.generic.EnumNetType;
+import ape.util.aml.AMLNode;
+import ape.util.aml.AMLWritable;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,7 +15,7 @@ import java.util.HashSet;
  *
  * @author Gabriel
  */
-public abstract class Data implements Serializable {
+public abstract class Data implements Serializable, AMLWritable {
   private EnumElementType elementType;
   private EnumNetType netType;
   private Collection<DataChangeListener> dataChangeListeners;
@@ -25,6 +28,10 @@ public abstract class Data implements Serializable {
 
   public EnumNetType getNetType() {
     return netType;
+  }
+  
+  protected void setNetType(EnumNetType netType) {
+    this.netType = netType;
   }
 
   public EnumElementType getElementType() {
@@ -44,4 +51,25 @@ public abstract class Data implements Serializable {
       listener.dataChanged(this);
     }
   }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = new AMLNode(getAMLTagName());
+    node.putAttribute("netType", netType.name());
+    node.putAttribute("elementType", elementType.name());
+    return node;
+  }
+
+  @Override
+  public String getAMLTagName() {
+    return "Data";
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    netType = EnumNetType.valueOf(node.getAttribute("netType"));
+    elementType = EnumElementType.valueOf(node.getAttribute("elementType"));
+  }
+  
+  
 }

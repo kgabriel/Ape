@@ -5,19 +5,21 @@
 package ape.ui;
 
 import ape.Ape;
+import ape.org.ModelStorage;
 import ape.petri.generic.EnumModelType;
 import ape.petri.generic.ModelElement;
-import ape.ui.modelview.ModelTreeView;
-import ape.ui.modelview.ModelViewCanvas;
-import ape.ui.modelview.ModelViewToolBar;
 import ape.ui.control.*;
-import ape.ui.control.commands.Command;
-import ape.ui.control.commands.CommandModelViewMouseScroll;
-import ape.ui.control.commands.CommandModelViewReset;
-import ape.ui.control.commands.CommandModelViewScale;
-import ape.ui.modelview.*;
-import ape.ui.modelview.generic.ModelView;
-import ape.ui.modelview.generic.Visual;
+import ape.ui.control.commands.*;
+import ape.ui.graphics.MainFrame;
+import ape.ui.graphics.MainMenu;
+import ape.ui.graphics.ProjectTree;
+import ape.ui.graphics.PropertyTable;
+import ape.ui.graphics.modelview.ModelTreeView;
+import ape.ui.graphics.modelview.ModelViewCanvas;
+import ape.ui.graphics.modelview.ModelViewListener;
+import ape.ui.graphics.modelview.ModelViewToolBar;
+import ape.ui.graphics.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.generic.Visual;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.InputEvent;
@@ -34,15 +36,16 @@ import javax.swing.JScrollPane;
  */
 public class UI implements ModelViewListener {
 
-  protected Ape theApe;
-  protected CommandManager commandManager;
-  protected MainFrame mainFrame;
-  protected MainMenu mainMenu;
-  protected ProjectTree projectTree;
-  protected ModelViewCanvas modelViewCanvas;
-  protected ModelViewToolBar modelViewToolbar;
-  protected ModelTreeView modelTreeView;
-  protected PropertyTable propertyTable;
+  public Ape theApe;
+  public CommandManager commandManager;
+  public MainFrame mainFrame;
+  public MainMenu mainMenu;
+  public ProjectTree projectTree;
+  public ModelViewCanvas modelViewCanvas;
+  public ModelViewToolBar modelViewToolbar;
+  public ModelTreeView modelTreeView;
+  public PropertyTable propertyTable;
+  
   private Collection<ModelViewListener> modelViewListeners;
   
   public UI(Ape ape) {
@@ -84,7 +87,7 @@ public class UI implements ModelViewListener {
     mainFrame.addTo(modelViewToolbar, MainFrame.TOP_PANEL, true);
         
     modelTreeView = new ModelTreeView(this);
-    mainFrame.addTo(new JScrollPane(modelTreeView), MainFrame.TOP_RIGHT_PANEL, false);
+    mainFrame.addTo(modelTreeView, MainFrame.TOP_RIGHT_PANEL, false);
     
     propertyTable = new PropertyTable(this);
     mainFrame.addTo(new JScrollPane(propertyTable), MainFrame.BOTTOM_RIGHT_PANEL, false);
@@ -111,21 +114,32 @@ public class UI implements ModelViewListener {
   private void initControl() {
     commandManager = new CommandManager(theApe);
     
+    commandManager.addReceiver(mainFrame);
     commandManager.addReceiver(modelViewCanvas);
 
     Command reset = new CommandModelViewReset();
     Command scale = new CommandModelViewScale();
     Command scroll = new CommandModelViewMouseScroll();
+    Command rename = new CommandSetProperty("Name");
+    Command setType = new CommandSetProperty("Type");
+    Command setConditions = new CommandSetProperty("Conditions");
+    Command setInscription = new CommandSetProperty("Inscriptions");
     
     commandManager.addCommand(reset);
     commandManager.addCommand(scale);
+    commandManager.addCommand(rename);
 
     commandManager.activateCommand(reset, new CommandBinding(EnumInvocationType.MousePress, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON2), new CommandBindingModifier(MouseEvent.CTRL_DOWN_MASK));
     commandManager.activateCommand(scroll, new CommandBinding(EnumInvocationType.MouseDrag, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON1), new CommandBindingModifier(MouseEvent.ALT_DOWN_MASK));
+    commandManager.activateCommand(scroll, new CommandBinding(EnumInvocationType.MouseDrag, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON2), new CommandBindingModifier());
     commandManager.activateCommand(scale, new CommandBinding(EnumInvocationType.MouseWheel, EnumCommandReceiverType.ModelView, MouseEvent.NOBUTTON), new CommandBindingModifier());
-    commandManager.activateCommand(reset, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.ModelView, KeyEvent.VK_C), new CommandBindingModifier(InputEvent.ALT_DOWN_MASK));
+    commandManager.activateCommand(reset, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_C), new CommandBindingModifier(InputEvent.ALT_DOWN_MASK));
+    commandManager.activateCommand(rename, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_R), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK));
+    commandManager.activateCommand(setType, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_T), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK));
+    commandManager.activateCommand(setConditions, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_E), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK));
+    commandManager.activateCommand(setInscription, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_R), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK));
   }
-
+  
   public MainFrame getMainFrame() {
     return mainFrame;
   }
@@ -136,6 +150,12 @@ public class UI implements ModelViewListener {
   
   public void setActiveModelView(ModelView view) {
     modelViewCanvas.setModelView(view);
+  }
+  
+  public void setActiveModelViewToActiveModel() {
+    ModelStorage activeModel = theApe.getActiveModel();
+    if(activeModel == null) return;
+    setActiveModelView(activeModel.getView());
   }
   
   public ModelView getActiveModelView() {
@@ -150,7 +170,7 @@ public class UI implements ModelViewListener {
     return modelViewToolbar;
   }
   
-  public PropertyTable getVisualTable() {
+  public PropertyTable getPropertyTable() {
     return propertyTable;
   }
   
@@ -180,6 +200,13 @@ public class UI implements ModelViewListener {
   public void visualElementRemovedFromActiveModelView(ModelElement e, Visual v) {
     for(ModelViewListener listener : modelViewListeners) {
       listener.visualElementRemovedFromActiveModelView(e, v);
+    }
+  }
+
+  @Override
+  public void visualElementHasChangedData(ModelElement e, Visual v) {
+    for(ModelViewListener listener : modelViewListeners) {
+      listener.visualElementHasChangedData(e, v);
     }
   }
 }

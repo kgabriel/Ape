@@ -5,15 +5,19 @@
 package ape.org;
 
 import ape.util.PropertyContainer;
+import ape.util.aml.AMLNode;
+import ape.util.aml.AMLWritable;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
  * @author Gabriel
  */
-public abstract class Storage implements PropertyContainer, Serializable {
+public abstract class Storage implements PropertyContainer, Serializable, AMLWritable {
   private String name;
   private transient Collection<StorageListener> storageListeners;
   private transient StorageContainer<?> container;
@@ -62,4 +66,19 @@ public abstract class Storage implements PropertyContainer, Serializable {
       listener.storageChanged(this);
     }
   }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = new AMLNode(getAMLTagName());
+    node.putAttribute("name", name);
+    return node;
+  }
+
+  
+  @Override
+  public void readAMLNode(AMLNode node) {
+    this.name = node.getAttribute("name");
+  }
+  
+  
 }

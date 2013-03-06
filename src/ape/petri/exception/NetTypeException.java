@@ -4,7 +4,7 @@
  */
 package ape.petri.exception;
 
-import ape.petri.generic.net.EnumNetType;
+import ape.petri.generic.EnumNetType;
 
 /**
  * This exception is thrown if someone tries to create a malformed arc, that is, an arc

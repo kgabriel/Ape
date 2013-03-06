@@ -4,6 +4,7 @@
  */
 package ape.petri.generic.net;
 
+import ape.util.aml.AMLNode;
 import java.util.Objects;
 
 /**
@@ -45,6 +46,10 @@ public abstract class AbstractNetElement implements NetElement {
     return net;
   }
   
+  protected void setNet(Net net) {
+    this.net = net;
+  }
+  
   /**
    * Compares this element to another object, and returns whether they are equal. An
    * <code>AbstractNetElement</code> is never equal to another element that is not
@@ -73,4 +78,18 @@ public abstract class AbstractNetElement implements NetElement {
     hash = 67 * hash + Objects.hashCode(this.net);
     return hash;
   }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = new AMLNode(getAMLTagName());
+    node.putAttribute("id", id);
+    return node;
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    id = node.getAttributeInt("id");
+  }
+  
+  
 }

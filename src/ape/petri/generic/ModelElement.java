@@ -18,4 +18,11 @@ public interface ModelElement extends Serializable {
    * @return a type defined in {@link EnumElementType} corresponding to this model element
    */
   public EnumElementType getElementType();
+  
+  /**
+   * Get the Id of this element given by the net that contains it.
+   * @return the (net-wide unique) Id of this element
+   * @see Net#freeElementId()
+   */
+  public int getId();
 }

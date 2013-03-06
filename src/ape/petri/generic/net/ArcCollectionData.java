@@ -4,6 +4,7 @@
  */
 package ape.petri.generic.net;
 
+import ape.petri.generic.EnumNetType;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;

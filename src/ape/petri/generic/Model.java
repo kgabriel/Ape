@@ -4,8 +4,10 @@
  */
 package ape.petri.generic;
 
-import ape.petri.generic.net.EnumNetType;
-import ape.petri.validity.InvalidityReason;
+import ape.petri.validity.Validity;
+import ape.util.aml.AMLNode;
+import ape.util.aml.AMLWritable;
+import java.awt.Color;
 import java.io.Serializable;
 import java.util.Collection;
 
@@ -13,30 +15,73 @@ import java.util.Collection;
  *
  * @author Gabriel
  */
-public interface Model extends Serializable {
+public abstract class Model implements Serializable, AMLWritable {
   
-  public EnumModelType getModelType();
+  /** the next free Id in this model */
+  private int freeId;
+
+  private EnumNetType netType;
+
+  private EnumModelType modelType;
   
-  public EnumNetType getNetType();
+  public Model(EnumModelType modelType, EnumNetType netType) {
+    this.modelType = modelType;
+    this.netType = netType;
+    freeId = 0;
+  }
   
-  public Collection<ModelElement> getAllElements();
+  public EnumModelType getModelType() {
+    return modelType;
+  }
+  
+  public EnumNetType getNetType() {
+    return netType;
+  }
+  
+  public abstract Collection<ModelElement> getAllElements();
+  
+  public abstract ModelElement getModelElementById(int id);
+    
+  /** 
+   * This method gives an unused Id for a new element. It returns the current value
+   * of an integer variable, increasing on every call.
+   * @return a fresh Id
+   */
+  public int freeElementId() {
+    return freeId++;
+  }
+  
+  protected void setFreeElementId(int freeId) {
+    this.freeId = freeId;
+  }
   
   /**
    * Returns whether this model is valid with respect to its theoretical definition.
-   * This method should always be consistent with {@link Model#getInvalidityReasons()}.
-   * @see Model#getInvalidityReasons()
-   * @return <code>true</code> if this <code>Model</code> is a valid model; otherwise, if
-   * there are reasons that this in not a valid model, it returns <code>false</code>
+   * @return a {@link ape.petri.validity.Validity} object that reflects the validity of this
+   * model
    */
-  public boolean isValid();
+  public abstract Validity validate();
+
+  @Override
+  public String getAMLTagName() {
+    return "Model";
+  }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = new AMLNode(getAMLTagName());
+    node.putAttribute("freeId", freeId);
+    node.putAttribute("modelType", modelType.name());
+    node.putAttribute("netType", netType.name());
+    return node;
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    freeId = node.getAttributeInt("freeId");
+    modelType = EnumModelType.valueOf(node.getAttribute("modelType"));
+    netType = EnumNetType.valueOf(node.getAttribute("netType"));
+  }
   
-  /**
-   * Returns all reasons that make this model invalid with respect to its theoretical definition.
-   * If there are different possible representations for one reason (for example, a loop
-   * in a graphical model that should be acyclic can have different locations), then the
-   * method may return only one of the possible representations. 
-   * @return <code>null</code> if the model is valid; otherwise it returns a collection
-   * of all reasons, preventing this model from being invalid
-   */
-  public Collection<InvalidityReason> getInvalidityReasons();
+  
 }

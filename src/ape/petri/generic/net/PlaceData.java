@@ -4,6 +4,8 @@
  */
 package ape.petri.generic.net;
 
+import ape.petri.generic.EnumNetType;
+
 /**
  * This interface is used to define the data carried by a place.
  * @author Gabriel

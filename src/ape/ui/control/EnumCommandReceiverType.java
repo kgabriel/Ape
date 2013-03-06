@@ -14,6 +14,7 @@ import java.util.HashSet;
  */
 public enum EnumCommandReceiverType {
 
+  Global("Global"),
   ModelView("Model View");
 
   private String name;

@@ -4,10 +4,10 @@
  */
 package ape.petri.pt;
 
+import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.ArcCollection;
 import ape.petri.generic.net.ArcElement;
 import ape.petri.generic.net.ArcElementData;
-import ape.petri.generic.net.EnumNetType;
 
 /**
  * This class describes the data, an {@link ArcElement} in a P/T net is equipped with. 

@@ -5,19 +5,13 @@
 package ape.petri.generic.net;
 
 import ape.petri.generic.ModelElement;
+import ape.util.aml.AMLWritable;
 
 /**
  *
  * @author Gabriel
  */
-public interface NetElement extends ModelElement { 
-
-  /**
-   * Get the Id of this element given by the net that contains it.
-   * @return the (net-wide unique) Id of this element
-   * @see Net#freeElementId()
-   */
-  public int getId();
+public interface NetElement extends ModelElement, AMLWritable { 
 
   /**
    * Get the net of this element.

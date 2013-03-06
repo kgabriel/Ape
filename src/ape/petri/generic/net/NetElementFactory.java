@@ -6,6 +6,7 @@ package ape.petri.generic.net;
 
 import ape.petri.exception.ElementTypeException;
 import ape.petri.exception.NetTypeException;
+import ape.petri.generic.EnumNetType;
 import java.io.Serializable;
 
 /**
@@ -79,7 +80,7 @@ public class NetElementFactory implements Serializable {
   }
   
   public ArcElement createDefaultArcElement(ArcCollection collection) {
-    return createArcElement(collection, dataFactory.createDefaultArcElementData(collection));
+    return createArcElement(collection, dataFactory.createDefaultArcElementData());
   }
   
   /**
@@ -107,5 +108,16 @@ public class NetElementFactory implements Serializable {
   public Net getNet() {
     return net;
   }
-  
+
+  public TransitionData createDefaultTransitionData() {
+    return dataFactory.createDefaultTransitionData();
+  }
+
+  public PlaceData createDefaultPlaceData() {
+    return dataFactory.createDefaultPlaceData();
+  }
+
+  public ArcElementData createDefaultArcElementData() {
+    return dataFactory.createDefaultArcElementData();
+  }
 }

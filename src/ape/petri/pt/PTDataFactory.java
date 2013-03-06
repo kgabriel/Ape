@@ -41,7 +41,7 @@ public class PTDataFactory extends DataFactory {
    * @return a new arc element data with default content
    */
   @Override
-  public ArcElementData createDefaultArcElementData(ArcCollection collection) {
+  public ArcElementData createDefaultArcElementData() {
     return new PTArcElementData();
   }
 

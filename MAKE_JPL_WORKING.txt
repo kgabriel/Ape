@@ -1,0 +1,4 @@
+the windows PAtH variable must contain the following
+- SWI-prolog\bin-folder containing "jpl.dll"
+- JRE-folder containing "jvm.dll"
+- Internet explorer-folder containing "IEShims.dll"

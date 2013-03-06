@@ -5,6 +5,7 @@
 package ape.petri.generic.net;
 
 import ape.petri.exception.ArcException;
+import ape.util.aml.AMLNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,7 +15,7 @@ import java.util.Iterator;
  * bundle of arcs with the same source and target.
  * This class should always be used by a net to manage its single {@link ArcElement ArcElements}.
  * An <code>ArcCollection</code> is a {@link java.util.Collection Collection} of 
- * {@link ArcElement ArcElements} as well as an {@link Arc}.
+ * {@link ArcElement ArcElements} as well as an {@link ArcElement}.
  * @author Gabriel
  */
 public class ArcCollection extends AbstractNetElement implements Arc, Collection<ArcElement> {
@@ -87,13 +88,13 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
   }
   
   private void setAndRegisterPlace(Place p) {
-    this.place = p;
     if(this.place != null) {
       this.place.deregisterArc(this);
     }
     if(p != null) {
       p.registerArc(this, direction.goesToPlace());
     }
+    this.place = p;
   }
 
   /**
@@ -115,13 +116,13 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
   }
 
   private void setAndRegisterTransition(Transition t) {
-    this.transition = t;
     if(this.transition != null) {
       this.transition.deregisterArc(this);
     }
     if(t != null) {
       t.registerArc(this, direction.goesToTransition());
     }
+    this.transition = t;
   }
 
   /**
@@ -442,5 +443,35 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
    */
   public ArcCollectionData getData() {
     return data;
+  }
+
+  @Override
+  public String getAMLTagName() {
+    return "ArcCollection";
+  }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = super.getAMLNode();
+    node.putAttribute("place", place.getId());
+    node.putAttribute("transition", transition.getId());
+    node.putAttribute("direction", direction.name());
+    for(ArcElement arcElement : this) {
+      node.addChild(arcElement.getAMLNode());
+    }
+    return node;
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    super.readAMLNode(node);
+    direction = EnumArcDirection.valueOf(node.getAttribute("direction"));
+    setAndRegisterPlace(net.getPlaceById(node.getAttributeInt("place")));
+    setAndRegisterTransition(net.getTransitionById(node.getAttributeInt("transition")));
+    for(AMLNode elementNode : node.getChildren("ArcElement")) {
+      ArcElement arcElement = net.factory.createDefaultArcElement(this);
+      arcElement.readAMLNode(elementNode);
+      addFreshElement(arcElement);
+    }
   }
 }

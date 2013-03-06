@@ -4,10 +4,12 @@
  */
 package ape.petri.generic.net;
 
+import ape.petri.generic.EnumNetType;
 import ape.petri.exception.ArcException;
 import ape.petri.generic.EnumModelType;
 import ape.petri.generic.Model;
 import ape.petri.generic.ModelElement;
+import ape.util.aml.AMLNode;
 import java.util.*;
 
 /**
@@ -36,10 +38,7 @@ import java.util.*;
  * @author Gabriel
  * @see EnumNetType
  */
-public abstract class Net implements Model {
-
-  /** the next free Id in this net */
-  private int freeId;
+public abstract class Net extends Model {
   
   /** the places of this net */
   protected Set<Place> places;
@@ -52,30 +51,21 @@ public abstract class Net implements Model {
   
   /** the factory providing net elements for this net's net type */
   protected NetElementFactory factory;
-  
-  private EnumNetType netType;
-  
     
   /**
    * Constructor that should be called by every concrete net implementation. 
    * @param netType the net type of this net
    */
   public Net(EnumNetType netType) {
+    super(EnumModelType.Net, netType);
     places = new HashSet<>();
     transitions = new HashSet<>();
     arcs = new HashMap<>();
-    freeId = 0;
-    this.netType = netType;
     initFactory();
   }
   
   private void initFactory() {
     factory = new NetElementFactory(this);
-  }
-
-  @Override
-  public EnumNetType getNetType() {
-    return netType;
   }
 
   @Override
@@ -241,7 +231,10 @@ public abstract class Net implements Model {
   private ArcCollection addArc(ArcCollection collection, ArcElement arc) {
     collection.addFreshElement(arc);
     return collection;
-    
+  }
+  
+  private void addArcCollection(ArcCollection collection) {
+    arcs.put(collection.toSimpleArc(), collection);
   }
 
   /**
@@ -313,16 +306,48 @@ public abstract class Net implements Model {
     }
     return transitions.remove(t);
   }
-  
-    
-  /** 
-   * This method gives an unused Id for a new element. It returns the current value
-   * of an integer variable, increasing on every call.
-   * @return a fresh Id
-   */
-  public int freeElementId() {
-    return freeId++;
+
+  public TransitionData createDefaultTransitionData() {
+    return factory.createDefaultTransitionData();
   }
+
+  public PlaceData createDefaultPlaceData() {
+    return factory.createDefaultPlaceData();
+  }
+
+  public ArcElementData createDefaultArcElementData() {
+    return factory.createDefaultArcElementData();
+  }
+  
+  public ArcCollection getArcCollectionById(int id) {
+    for(ArcCollection a : arcs.values()) {
+      if(a.getId() == id) return a;
+    }
+    return null;
+  }
+  
+  public Place getPlaceById(int id) {
+    for(Place p : places) {
+      if(p.getId() == id) return p;
+    }
+    return null;
+  }
+  public Transition getTransitionById(int id) {
+    for(Transition t : transitions) {
+      if(t.getId() == id) return t;
+    }
+    return null;
+  }
+  
+  @Override
+  public ModelElement getModelElementById(int id) {
+    Node n = getPlaceById(id);
+    if(n != null) return n;
+    n = getTransitionById(id);
+    if(n != null) return n;
+    return getArcCollectionById(id);
+  }
+  
 
   /**
    * Returns the model type of this model.
@@ -332,5 +357,42 @@ public abstract class Net implements Model {
   public EnumModelType getModelType() {
     return EnumModelType.Net;
   }
-  
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = super.getAMLNode();
+    for(Place p : places) {
+      node.addChild(p.getAMLNode());
+    }
+    for(Transition t : transitions) {
+      node.addChild(t.getAMLNode());
+    }
+    for(ArcCollection arcCollection : arcs.values()) {
+      node.addChild(arcCollection.getAMLNode());
+    }
+    return node;
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    super.readAMLNode(node);
+    factory = new NetElementFactory(this);
+    for(AMLNode placeNode : node.getChildren("Place")) {
+      Place place = factory.createDefaultPlace();
+      place.readAMLNode(placeNode);
+      addPlace(place);
+    }
+    for(AMLNode transitionNode : node.getChildren("Transition")) {
+      Transition transition = factory.createDefaultTransition();
+      transition.readAMLNode(transitionNode);
+      addTransition(transition);
+    }
+    for(AMLNode arcNode : node.getChildren("ArcCollection")) {
+      ArcCollection arc = new ArcCollection(this, null, null, EnumArcDirection.PT);
+      arc.readAMLNode(arcNode);
+      addArcCollection(arc);
+    }
+    
+    setFreeElementId(node.getAttributeInt("freeId"));
+  }  
 }

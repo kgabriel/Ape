@@ -4,6 +4,8 @@
  */
 package ape.org;
 
+import ape.util.aml.AMLNode;
+
 /**
  *
  * @author Gabriel
@@ -28,10 +30,24 @@ public class ProjectCollection extends StorageContainer<ProjectStorage> {
       addActiveStorage();
     }
     if(removed.equals(getActiveStorage())) {
-      setActiveStorage(storages.get(storages.firstKey()));
+      setActiveStorage(storages.get(0));
     }
     return removed;
   }
   
-  
+  @Override
+  public void readAMLNode(AMLNode node) {
+    super.readAMLNode(node);
+    clear();
+    for(AMLNode child : node.getChildren()) {
+      ProjectStorage projectStorage = new ProjectStorage();
+      projectStorage.readAMLNode(child);
+      addStorage(projectStorage);
+    }
+  }
+
+  @Override
+  public String getAMLTagName() {
+    return "ProjectCollection";
+  }
 }

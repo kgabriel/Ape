@@ -4,6 +4,9 @@
  */
 package ape.petri.generic.net;
 
+import ape.petri.generic.EnumNetType;
+import ape.util.aml.AMLNode;
+
 /**
  *
  * @author Gabriel
@@ -25,4 +28,19 @@ public abstract class NodeData extends Data {
     this.name = name;
     dataHasChanged();
   }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = super.getAMLNode();
+    node.putAttribute("name", name);
+    return node;
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    super.readAMLNode(node);
+    this.name = node.getAttribute("name");
+  }
+  
+  
 }

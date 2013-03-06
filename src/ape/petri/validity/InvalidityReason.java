@@ -4,15 +4,31 @@
  */
 package ape.petri.validity;
 
-import ape.petri.generic.ModelElement;
-
 /**
  *
  * @author Gabriel
  */
-public interface InvalidityReason {
+public class InvalidityReason {
   
-  public String getDescription();
+  EnumInvalidityType type;
+  String location;
   
-  public ModelElement getLocation();
+  public InvalidityReason(EnumInvalidityType type, String location) {
+    this.type = type;
+    this.location = location;
+  }
+  
+  public EnumInvalidityType getType() {
+    return type;
+  }
+  
+  public String getLocation() {
+    return location;
+  }
+  
+  public String toString() {
+    String string = " Problem: " + type.getDescription() + "\n";
+    string += " Location: " + location + "\n";
+    return string;
+  }
 }

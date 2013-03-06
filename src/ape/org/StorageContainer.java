@@ -5,41 +5,44 @@
 package ape.org;
 
 import ape.util.Property;
-import java.util.Collection;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import ape.util.aml.AMLNode;
+import ape.util.aml.AMLWritable;
+import java.util.*;
 
 /**
  *
  * @author Gabriel
  */
-public class StorageContainer<S extends Storage> extends Storage implements StorageListener {
+public abstract class StorageContainer<S extends Storage> extends Storage implements StorageListener, AMLWritable {
   
-  protected SortedMap<Integer,S> storages;
-  private int freeKey;
+  protected List<S> storages;
   protected S activeStorage;
   
   public StorageContainer(String name) {
     super(name);
-    storages = new TreeMap<>();
+    storages = new ArrayList<>();
     this.activeStorage = null;
-    this.freeKey = 0;
   }
   
   public Collection<S> getStorages() {
-    return storages.values();
+    return storages;
   }
   
   public void addStorage(S storage) {
-    storages.put(nextFreeKey(), storage);
+    storages.add(storage);
     storage.addStorageListener(this);
     storage.setContainer(this);
     storageHasChanged();
   }
+  
+  public void addStorages(Collection<S> storages) {
+    for(S storage : storages) {
+      addStorage(storage);
+    }
+  }
 
-  public S removeStorage(int key) {
-    S removed = storages.remove(key);
+  public S removeStorage(int index) {
+    S removed = storages.remove(index);
     if(removed != null) {
       storageHasChanged();
       removed.setContainer(null);
@@ -48,8 +51,8 @@ public class StorageContainer<S extends Storage> extends Storage implements Stor
     return removed;
   }
   
-  public S getStorage(int key) {
-    return storages.get(key);
+  public S getStorage(int index) {
+    return storages.get(index);
   }
 
   public S getActiveStorage() {
@@ -60,10 +63,6 @@ public class StorageContainer<S extends Storage> extends Storage implements Stor
     this.activeStorage = activeStorage;
   }
   
-  private int nextFreeKey() {
-    return freeKey++;
-  }
-
   @Override
   public void storageChanged(Storage changedStorage) {
     storageHasChanged();
@@ -76,5 +75,17 @@ public class StorageContainer<S extends Storage> extends Storage implements Stor
   
   public boolean isEmpty() {
     return storages.isEmpty();
+  }
+  
+  public void clear() {
+    storages.clear();
+  }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = super.getAMLNode();
+    for(S storage : storages)
+    node.addChild(storage.getAMLNode());
+    return node;
   }
 }
