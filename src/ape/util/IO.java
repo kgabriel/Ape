@@ -8,7 +8,7 @@ import ape.org.ModelStorage;
 import ape.org.ProjectStorage;
 import ape.petri.generic.EnumModelType;
 import ape.ui.UI;
-import ape.ui.graphics.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.ModelView;
 import ape.util.aml.AMLNode;
 import ape.util.aml.ApeML;
 import java.io.*;
@@ -86,7 +86,7 @@ public class IO {
     List<AMLNode> nodes = ApeML.read(fileName);
     List<ModelStorage> storages = new ArrayList<>();
     for(AMLNode node : nodes) {
-      ModelStorage modelStorage = new ModelStorage(EnumModelType.Rule, null, null);
+      ModelStorage modelStorage = new ModelStorage(null, null);
       modelStorage.readAMLNode(node);
 
       if(modelStorage == null) continue;
@@ -97,52 +97,32 @@ public class IO {
     return storages;
   }
   
-  public static Object load(String fileName) {
-    Object object = null;
-    try {
-      FileInputStream fileIn = new FileInputStream(fileName);
-      ObjectInputStream in = new ObjectInputStream(fileIn);
-      object = in.readObject();
-      in.close();
-      fileIn.close();
-    } catch(ClassNotFoundException | IOException e) {
-      e.printStackTrace();
+  public static void saveProject(ProjectStorage project, UI ui, boolean saveAs) {
+    File file;
+    if(!saveAs && project.hasFileName()) {
+      file = new File(project.getFileName());
+    } else {
+      file = singleFileChooser(ui.getMainFrame(), false, "Projects", PROJECT_EXTENSION, 
+              "Save Project", project.getName());
     }
-    return object;
-  }
-  
-  public static void saveProject(ProjectStorage project, UI ui) {
-    File file = singleFileChooser(ui.getMainFrame(), false, "Projects", PROJECT_EXTENSION, 
-            "Save Project", project.getName());
     if(file == null) return;
-//    save(project, ensureExtension(file.getAbsolutePath(),PROJECT_EXTENSION));
-    ApeML.write(project.getAMLNode(), ensureExtension(file.getAbsolutePath(),PROJECT_EXTENSION));
+    String fileName = ensureExtension(file.getAbsolutePath(),PROJECT_EXTENSION);
+    ApeML.write(project.getAMLNode(), fileName);
+    project.setFileName(fileName);
+    project.onSave();
   }
   
   public static void saveModel(ModelStorage model, UI ui) {
-    EnumModelType modelType = model.getType();
+    EnumModelType modelType = model.getModelType();
     String modelName = modelType.getName();
     File file = singleFileChooser(ui.getMainFrame(), false, modelName, 
             modelType.getFileExtension(), "Save " + modelName, model.getName());
     if(file == null) return;
-//    save(model, ensureExtension(file.getAbsolutePath(), modelType.getFileExtension()));
     ApeML.write(model.getAMLNode(), ensureExtension(file.getAbsolutePath(), modelType.getFileExtension()));
   }
   
   public static String ensureExtension(String fileName, String extension) {
     if(fileName.endsWith(extension)) return fileName;
     return fileName + "." + extension;
-  }
-  
-  public static void save(Object object, String fileName) {
-    try {
-      FileOutputStream fileOut = new FileOutputStream(fileName);
-      ObjectOutputStream out = new ObjectOutputStream(fileOut);
-      out.writeObject(object);
-      out.close();
-      fileOut.close();
-    } catch(IOException e) {
-      e.printStackTrace();
-    }
   }
 }

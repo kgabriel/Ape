@@ -7,7 +7,7 @@ package ape.ui.control.actions.global;
 import ape.Ape;
 import ape.org.ModelStorage;
 import ape.petri.generic.EnumModelType;
-import ape.ui.control.actions.GlobalAction;
+import ape.ui.control.actions.Action;
 import ape.util.IO;
 import java.util.List;
 
@@ -15,16 +15,16 @@ import java.util.List;
  *
  * @author Gabriel
  */
-public class LoadModelAction extends GlobalAction {
+public class LoadModelAction extends Action {
   private EnumModelType modelType;
 
   public LoadModelAction(Ape theApe, EnumModelType modelType) {
-    super(theApe);
+    super(theApe, "Load Model");
     this.modelType = modelType;
   }
 
   @Override
-  public void invoke() {
+  protected void onInvocation() {
     List<ModelStorage> models = IO.loadModels(theApe.ui, modelType);
     if(models.isEmpty()) return;
     theApe.projects.getActiveStorage().addStorages(models);

@@ -7,20 +7,21 @@ package ape.org;
 import ape.util.PropertyContainer;
 import ape.util.aml.AMLNode;
 import ape.util.aml.AMLWritable;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
  * @author Gabriel
  */
-public abstract class Storage implements PropertyContainer, Serializable, AMLWritable {
+public abstract class Storage implements PropertyContainer, AMLWritable {
   private String name;
-  private transient Collection<StorageListener> storageListeners;
-  private transient StorageContainer<?> container;
+  private Collection<StorageListener> storageListeners;
+  private StorageContainer<?> container;
+  
+  public Storage() {
+    this("Storage");
+  }
   
   public Storage(String typeName) {
     name = "New " + typeName;
@@ -38,6 +39,11 @@ public abstract class Storage implements PropertyContainer, Serializable, AMLWri
 
   public void setContainer(StorageContainer<?> container) {
     this.container = container;
+  }
+  
+  protected void setNewName(String name) {
+    this.name = "New " + name;
+    storageHasChanged();
   }
 
   public void setName(String name) {
@@ -79,6 +85,4 @@ public abstract class Storage implements PropertyContainer, Serializable, AMLWri
   public void readAMLNode(AMLNode node) {
     this.name = node.getAttribute("name");
   }
-  
-  
 }

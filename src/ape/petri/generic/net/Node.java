@@ -4,6 +4,7 @@
  */
 package ape.petri.generic.net;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -15,7 +16,7 @@ import java.util.HashSet;
  * knows, which <code>Arc</code>s are connected to it.
  * @author Gabriel
  */
-public abstract class Node extends AbstractNetElement {
+public abstract class Node extends NetElement {
 
   /** A collection of all arcs that have this node as their target node. */
   protected Collection<ArcCollection> incomingArcs;
@@ -27,8 +28,8 @@ public abstract class Node extends AbstractNetElement {
    * A new node in the given net.
    * @param net the net to contain this node
    */
-  public Node(Net net) {
-    super(net);
+  public Node(Net net, NodeData data) {
+    super(net, data);
     incomingArcs = new HashSet<>();
     outgoingArcs = new HashSet<>();
   }
@@ -66,7 +67,7 @@ public abstract class Node extends AbstractNetElement {
    * @return a collection of all incoming arcs, registered to this node
    */
   public Collection<ArcCollection> getIncomingArcs() {
-    return incomingArcs;
+    return new ArrayList<>(incomingArcs);
   }
 
   /**
@@ -74,6 +75,6 @@ public abstract class Node extends AbstractNetElement {
    * @return a collection of all outgoing arcs, registered to this node
    */
   public Collection<ArcCollection> getOutgoingArcs() {
-    return outgoingArcs;
+    return new ArrayList<>(outgoingArcs);
   }
 }

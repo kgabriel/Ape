@@ -9,21 +9,21 @@ import ape.petri.ahl.instantiation.AHLInstantiation;
 import ape.petri.validity.EnumInvalidityType;
 import ape.petri.validity.InvalidityReason;
 import ape.petri.validity.Validity;
-import ape.ui.control.actions.GlobalModelAction;
+import ape.ui.control.actions.ModelAction;
 import javax.swing.JOptionPane;
 
 /**
  *
  * @author Gabriel
  */
-public class ValidateInstantiationAction extends GlobalModelAction {
+public class ValidateInstantiationAction extends ModelAction {
 
   public ValidateInstantiationAction(Ape theApe) {
-    super(theApe);
+    super(theApe, "Validate Instantiation");
   }
 
   @Override
-  public void invoke() {
+  protected void onInvocation() {
     AHLInstantiation inst = (AHLInstantiation) getModel();
     Validity validity = inst.validate();
     if(validity.isValid()) {

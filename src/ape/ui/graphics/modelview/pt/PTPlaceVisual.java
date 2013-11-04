@@ -4,7 +4,6 @@
  */
 package ape.ui.graphics.modelview.pt;
 
-import ape.petri.generic.net.Place;
 import ape.petri.pt.PTPlaceData;
 import ape.ui.graphics.modelview.generic.PlaceVisual;
 import java.awt.Graphics2D;
@@ -16,17 +15,17 @@ import java.awt.Point;
  */
 public class PTPlaceVisual extends PlaceVisual {
 
-  public PTPlaceVisual(Graphics2D superGraphics, Place place) {
-    this(superGraphics, new Point(0,0), place);
+  public PTPlaceVisual(Graphics2D superGraphics, PTPlaceData data, int modelElementId) {
+    this(superGraphics, new Point(0,0), data, modelElementId);
   }
 
-  public PTPlaceVisual(Graphics2D superGraphics, Point position, Place place) {
-    super(superGraphics, position, place);
+  public PTPlaceVisual(Graphics2D superGraphics, Point position, PTPlaceData data, int modelElementId) {
+    super(superGraphics, position, data, modelElementId);
     updateLabel();
   }
 
   private void updateLabel() {
-    PTPlaceData ptData = (PTPlaceData) place.getData();
+    PTPlaceData ptData = (PTPlaceData) data;
     label.setText(ptData.getName());
   }
 

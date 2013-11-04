@@ -4,11 +4,9 @@
  */
 package ape.util.aml;
 
+import ape.util.ResourceIO;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -24,6 +22,10 @@ public class ApeML {
       System.out.println(e);
     }
     return parser.getNodes();
+  }
+  
+  public static List<AMLNode> readResource(String resourceName) {
+    return read(ResourceIO.getResourcePath(resourceName));
   }
   
   private static String readStringFromFile(String fileName) {
@@ -45,6 +47,10 @@ public class ApeML {
   
   public static void write(AMLNode node, String fileName) {
     writeStringToFile(node.write(), fileName);
+  }
+  
+  public static void writeResource(AMLNode node, String localResourcePath, String resourceName) {
+    write(node, ResourceIO.getResourcePath(localResourcePath) + "/" + resourceName);
   }
   
   private static void writeStringToFile(String string, String fileName) {

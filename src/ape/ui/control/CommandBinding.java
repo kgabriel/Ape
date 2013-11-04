@@ -4,6 +4,9 @@
  */
 package ape.ui.control;
 
+import ape.util.aml.AMLNode;
+import ape.util.aml.AMLWritable;
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
@@ -11,7 +14,7 @@ import java.awt.event.MouseEvent;
  *
  * @author Gabriel
  */
-public class CommandBinding {
+public class CommandBinding implements AMLWritable {
 
   private EnumInvocationType invocationType;
   private EnumCommandReceiverType receiverType;
@@ -22,7 +25,7 @@ public class CommandBinding {
     this.receiverType = receiverType;
     this.bindingValue = bindingValue;
   }
-
+  
   public int getBindingValue() {
     return bindingValue;
   }
@@ -99,5 +102,26 @@ public class CommandBinding {
     hash = 71 * hash + (this.receiverType != null ? this.receiverType.hashCode() : 0);
     hash = 71 * hash + this.bindingValue;
     return hash;
+  }
+
+  @Override
+  public String getAMLTagName() {
+    return "Binding";
+  }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = new AMLNode(getAMLTagName());
+    node.putAttribute("invocation", invocationType.name());
+    node.putAttribute("receiver", receiverType.name());
+    node.putAttribute("value", bindingValue);
+    return node;
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    this.invocationType = EnumInvocationType.valueOf(node.getAttribute("invocation"));
+    this.receiverType = EnumCommandReceiverType.valueOf(node.getAttribute("receiver"));
+    this.bindingValue = node.getAttributeInt("value");
   }
 }

@@ -18,8 +18,9 @@ import ape.ui.graphics.modelview.ModelTreeView;
 import ape.ui.graphics.modelview.ModelViewCanvas;
 import ape.ui.graphics.modelview.ModelViewListener;
 import ape.ui.graphics.modelview.ModelViewToolBar;
-import ape.ui.graphics.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.ModelView;
 import ape.ui.graphics.modelview.generic.Visual;
+import ape.util.aml.ApeML;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.InputEvent;
@@ -29,6 +30,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+import javax.swing.UIManager;
 
 /**
  *
@@ -72,6 +74,7 @@ public class UI implements ModelViewListener {
 
   private void initComponents() {
     mainFrame = new MainFrame();
+    mainFrame.setTitle("APE Algebraic High-Level Net and Process Editor");
     
     mainMenu = new MainMenu(theApe);
     mainFrame.setJMenuBar(mainMenu);
@@ -117,19 +120,30 @@ public class UI implements ModelViewListener {
     commandManager.addReceiver(mainFrame);
     commandManager.addReceiver(modelViewCanvas);
 
-    Command reset = new CommandModelViewReset();
-    Command scale = new CommandModelViewScale();
-    Command scroll = new CommandModelViewMouseScroll();
-    Command rename = new CommandSetProperty("Name");
-    Command setType = new CommandSetProperty("Type");
-    Command setConditions = new CommandSetProperty("Conditions");
-    Command setInscription = new CommandSetProperty("Inscriptions");
+    commandManager.readAMLNode(ApeML.readResource("config/commands.cfg").get(0));
     
-    commandManager.addCommand(reset);
-    commandManager.addCommand(scale);
-    commandManager.addCommand(rename);
+    /* 
+    // activate commands the "old fashioned" way
+    Command modelViewClick = new ModelViewMouseClickCommand();
+    Command modelViewPress = new ModelViewMousePressCommand();
+    Command modelViewRelease = new ModelViewMouseReleaseCommand();
+    Command modelViewMove = new ModelViewMouseMoveCommand(false);
+    Command modelViewDrag = new ModelViewMouseMoveCommand(true);
+    Command reset = new ModelViewResetCommand();
+    Command scale = new ModelViewScaleCommand();
+    Command scroll = new ModelViewMouseScrollCommand();
+    Command rename = new SetPropertyCommand("Name");
+    Command setType = new SetPropertyCommand("Type");
+    Command setConditions = new SetPropertyCommand("Conditions");
+    Command setInscription = new SetPropertyCommand("Inscriptions");
 
-    commandManager.activateCommand(reset, new CommandBinding(EnumInvocationType.MousePress, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON2), new CommandBindingModifier(MouseEvent.CTRL_DOWN_MASK));
+    commandManager.activateCommand(modelViewClick, new CommandBinding(EnumInvocationType.MouseClick, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON1), new CommandBindingModifier(CommandBindingModifier.NO_MASK, CommandBindingModifier.NO_MASK));
+    commandManager.activateCommand(modelViewPress, new CommandBinding(EnumInvocationType.MousePress, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON1), new CommandBindingModifier(CommandBindingModifier.NO_MASK, CommandBindingModifier.NO_MASK));
+    commandManager.activateCommand(modelViewRelease, new CommandBinding(EnumInvocationType.MouseRelease, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON1), new CommandBindingModifier(CommandBindingModifier.NO_MASK, CommandBindingModifier.NO_MASK));
+    commandManager.activateCommand(modelViewMove, new CommandBinding(EnumInvocationType.MouseMove, EnumCommandReceiverType.ModelView, MouseEvent.NOBUTTON), new CommandBindingModifier(CommandBindingModifier.NO_MASK, CommandBindingModifier.NO_MASK));
+    commandManager.activateCommand(modelViewDrag, new CommandBinding(EnumInvocationType.MouseDrag, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON1), new CommandBindingModifier(CommandBindingModifier.NO_MASK, CommandBindingModifier.NO_MASK));
+    
+    commandManager.activateCommand(reset, new CommandBinding(EnumInvocationType.MousePress, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON2), new CommandBindingModifier());
     commandManager.activateCommand(scroll, new CommandBinding(EnumInvocationType.MouseDrag, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON1), new CommandBindingModifier(MouseEvent.ALT_DOWN_MASK));
     commandManager.activateCommand(scroll, new CommandBinding(EnumInvocationType.MouseDrag, EnumCommandReceiverType.ModelView, MouseEvent.BUTTON2), new CommandBindingModifier());
     commandManager.activateCommand(scale, new CommandBinding(EnumInvocationType.MouseWheel, EnumCommandReceiverType.ModelView, MouseEvent.NOBUTTON), new CommandBindingModifier());
@@ -138,6 +152,13 @@ public class UI implements ModelViewListener {
     commandManager.activateCommand(setType, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_T), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK));
     commandManager.activateCommand(setConditions, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_E), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK));
     commandManager.activateCommand(setInscription, new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_R), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK));
+    */
+    
+//    commandManager.activateCommand(commandManager.commandProvider.getCommand("Save Project"), new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_S), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK));
+//    commandManager.activateCommand(commandManager.commandProvider.getCommand("Save Project As"), new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, KeyEvent.VK_S), new CommandBindingModifier(InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+
+   // store command bindings in file
+    ApeML.writeResource(commandManager.getAMLNode(), "config", "commands.cfg");
   }
   
   public MainFrame getMainFrame() {

@@ -5,20 +5,25 @@
 package ape.petri.generic.net;
 
 import ape.petri.exception.ArcException;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
+import ape.util.PropertyContainer;
 import ape.util.aml.AMLNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
- * An <code>ArcCollection</code> is an {@link AbstractNetElement}, representing a
+ * An <code>ArcCollection</code> is an {@link NetElement}, representing a
  * bundle of arcs with the same source and target.
  * This class should always be used by a net to manage its single {@link ArcElement ArcElements}.
  * An <code>ArcCollection</code> is a {@link java.util.Collection Collection} of 
  * {@link ArcElement ArcElements} as well as an {@link ArcElement}.
  * @author Gabriel
  */
-public class ArcCollection extends AbstractNetElement implements Arc, Collection<ArcElement> {
+public class ArcCollection extends NetElement implements Arc, Collection<ArcElement>, PropertyContainer {
 
   /** a collection holding the single elements of this <code>ArcCollection</code> */
   private Collection<ArcElement> arcs;
@@ -32,9 +37,6 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
   /** the direction of this arc */
   private EnumArcDirection direction;
   
-  /** the data of this arc collection */
-  private ArcCollectionData data;
-
   /**
    * A new arc between a place and a transition with the given direction.
    * @param net the net, containing this arc
@@ -43,31 +45,12 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
    * @param dir the direction of this arc
    * @see EnumArcDirection
    */
-  public ArcCollection(Net net, Place p, Transition t, EnumArcDirection dir) {
-    super(net);
+  public ArcCollection(Net net, Place p, Transition t, EnumArcDirection dir, ArcCollectionData data) {
+    super(net, data);
     direction = dir;
     setAndRegisterPlace(p);
     setAndRegisterTransition(t);
     arcs = new ArrayList<>();
-    data = new ArcCollectionData(net.getNetType());
-  }
-  
-  
-  /**
-   * A new arc from a given source to target
-   * @param net the net, containing this arc
-   * @param source the new source node
-   * @param target the target node
-   * @param dir the direction of this arc (place to transition or transition to place)
-   * @throws ArcException the type of source or target nodes does not match the given direction
-   */
-  public ArcCollection(Net net, Node source, Node target, EnumArcDirection dir) throws ArcException {
-    super(net);
-    direction = dir;
-    setAndRegisterNode(source,true);
-    setAndRegisterNode(target,false);
-    arcs = new ArrayList<>();
-    data = new ArcCollectionData(net.getNetType());
   }
   
   /**
@@ -222,7 +205,7 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
    * @see ArcElementData
    */
   private void addDataOf(ArcElement e) {
-    data.addDataElement(e.getData());
+    getData().addDataElement(e.getData());
   }
   
   /** 
@@ -232,7 +215,7 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
    * @see ArcElementData
    */
   private void removeDataOf(ArcElement e) {
-    data.removeDataElement(e.getData());
+    getData().removeDataElement(e.getData());
   }
 
   /**
@@ -240,11 +223,11 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
    * is contained in another collection, it is first removed from that collection.
    * If the element already is contained in this collection, nothing happens.
    * This method is more expensive than 
-   * {@link ArcCollection#addFreshElement(ape.petri.generic.ArcElement)}, and it
+   * {@link ArcCollection#addFreshElement(ape.petri.generic.net.ArcElement)}, and it
    * is recommended to use that method instead, if the element is surely not used elsewhere.
    * @param e the arc element to be added
    * @return <code>true</code> if this collection has been changed by this call
-   * @see ArcCollection#addFreshElement(ape.petri.generic.ArcElement) 
+   * @see ArcCollection#addFreshElement(ape.petri.generic.net.ArcElement)
    */
   @Override
   public boolean add(ArcElement e) {
@@ -272,7 +255,7 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
 
   
   /**
-   * Calls the {@link ArcCollection#add(ape.petri.generic.ArcElement)}-method for each
+   * Calls the {@link ArcCollection#add(ape.petri.generic.net.ArcElement)}-method for each
    * element in the given collection. This method should not be used.
    * @param c a collection, containing arc elements to be added
    * @return <code>true</code> if this collection has been changed by this call
@@ -432,8 +415,8 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
   }
 
   @Override
-  public EnumElementType getElementType() {
-    return EnumElementType.ArcCollection;
+  public EnumNetElementType getElementType() {
+    return EnumNetElementType.ArcCollection;
   }
 
   /**
@@ -441,8 +424,23 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
    * @return the {@link ArcCollectionData} containing all data of the elements in this
    * collection
    */
+  @Override
   public ArcCollectionData getData() {
-    return data;
+    return (ArcCollectionData) super.getData();
+  }
+
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = new ArrayList<>();
+    String dir = (direction == EnumArcDirection.PT ? "Pre Arc" : "Post Arc");
+    properties.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.SingleLineText, "Arc Type", dir));
+
+    /* place of the arc */
+    properties.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.SingleLineText, "Place", place.getData().getName()));
+
+    /* transition of the arc */
+    properties.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.SingleLineText, "Transition", place.getData().getName()));
+    return properties;
   }
 
   @Override
@@ -469,7 +467,7 @@ public class ArcCollection extends AbstractNetElement implements Arc, Collection
     setAndRegisterPlace(net.getPlaceById(node.getAttributeInt("place")));
     setAndRegisterTransition(net.getTransitionById(node.getAttributeInt("transition")));
     for(AMLNode elementNode : node.getChildren("ArcElement")) {
-      ArcElement arcElement = net.factory.createDefaultArcElement(this);
+      ArcElement arcElement = new ArcElement(this, net.factory.createDefaultArcElementData());
       arcElement.readAMLNode(elementNode);
       addFreshElement(arcElement);
     }

@@ -4,62 +4,41 @@
  */
 package ape.ui.graphics.modelview.generic;
 
+import ape.petri.generic.net.NodeData;
 import ape.util.EnumPropertyType;
 import ape.util.Property;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * This abstract {@link Visual} subclass is the superclass for all visual node elements like
  * places and transitions.
  * @author Gabriel
  */
-public abstract class NodeVisual extends Visual {
+public abstract class NodeVisual extends ModelElementVisual {
 
   protected Collection<ArcVisual> connectedArcs;
   
   public static final int PROPERTY_X = 0;
   public static final int PROPERTY_Y = 1;
 
-  public NodeVisual(Graphics2D superGraphics) {
-    super(superGraphics);
+  public NodeVisual(Graphics2D superGraphics, NodeData data, int modelElementId) {
+    super(superGraphics, data, modelElementId);
     this.connectedArcs = new HashSet<>();
-    initProperties();
   }
   
-  public NodeVisual(Graphics2D superGraphics, Rectangle bounds) {
-    super(superGraphics, bounds);
+  public NodeVisual(Graphics2D superGraphics, Rectangle bounds, NodeData data, int modelElementId) {
+    super(superGraphics, bounds, data, modelElementId);
     this.connectedArcs = new HashSet<>();
-    initProperties();
   }
   
-  private void initProperties() {
-    addProperty(new Property(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Name", true) {
-      @Override
-      public Object getValue() {
-        return getDataName();
-      }
-
-      @Override
-      public void setValue(Object value) {
-        setDataName((String) value);
-      }      
-    });
-    
-    addProperty(new Property(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.Integer, "Element ID", false) {
-      @Override
-      public Object getValue() {
-        return getNodeId();
-      }
-
-      @Override
-      public void setValue(Object value) {}
-    });
-
-   
-    addProperty(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "X", true) {
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+    properties.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "X") {
       @Override
       public Object getValue() {
         return (int) getCenterX();
@@ -71,7 +50,7 @@ public abstract class NodeVisual extends Visual {
       }      
     });
    
-    addProperty(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "Y", true) {
+    properties.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "Y") {
       @Override
       public Object getValue() {
         return (int) getCenterY();
@@ -82,13 +61,8 @@ public abstract class NodeVisual extends Visual {
         setCenter((int) getCenterX(), (Integer) value);
       }      
     });
+    return properties;
   }
-  
-  public abstract String getDataName();
-  
-  public abstract void setDataName(String name);
-  
-  public abstract int getNodeId();
   
   protected void addConnectedArc(ArcVisual av) {
     connectedArcs.add(av);

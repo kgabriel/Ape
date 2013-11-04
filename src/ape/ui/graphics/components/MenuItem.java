@@ -6,6 +6,7 @@ package ape.ui.graphics.components;
 
 import ape.ui.control.actions.Action;
 import ape.util.EnumIcon;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 
@@ -37,7 +38,7 @@ public class MenuItem extends JMenuItem {
     this(caption, mnemonic, icon.getIcon(), action);
   }
 
-  public MenuItem(String caption, int mnemonic, ImageIcon icon, Action action) {
+  public MenuItem(String caption, int mnemonic, Icon icon, Action action) {
     this.action = action;
     setAction(action.getSwingAction(caption, icon));
     setText(caption);

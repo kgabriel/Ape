@@ -22,7 +22,7 @@ import javax.swing.tree.TreeSelectionModel;
  *
  * @author Gabriel
  */
-  public class ProjectTree extends JPanel implements TreeSelectionListener, StorageListener {
+  public class ProjectTree extends JPanel implements TreeSelectionListener, StorageListener, StorageContainerListener {
   
   private IconTree tree;
   private ProjectCollection projectsStorages;
@@ -33,6 +33,7 @@ import javax.swing.tree.TreeSelectionModel;
   public ProjectTree(ProjectCollection projectStorages, UI ui) {
     this.projectsStorages = projectStorages;
     projectStorages.addStorageListener(this);
+    projectStorages.addStorageContainerListener(this);
     this.ui = ui;
     storages = new HashMap<>();
     nodes = new HashMap<>();
@@ -59,9 +60,14 @@ import javax.swing.tree.TreeSelectionModel;
     nodes.put(storage, node);
   }
   
+  private void removeStorage(Storage storage) {
+    IconTreeNode node = nodes.remove(storage);
+    storages.remove(node);
+  }
+  
   private String modelName(ModelStorage model) {
     String modelName = model.getName();
-    modelName += " (" + model.getModel().getNetType() + " " + model.getType().getName() + ")";
+    modelName += " (" + model.getModel().getNetType() + " " + model.getModelType().getName() + ")";
     return modelName;
   }
   
@@ -70,10 +76,11 @@ import javax.swing.tree.TreeSelectionModel;
       IconTreeNode projectNode;
       if(storages.containsValue(project)) {
         projectNode = nodes.get(project);
-        projectNode.setUserObject(project.getName());
+        projectNode.setUserObject(project.getName() + (project.hasUnsavedChanges() ? "*" : ""));
       } else {
-        projectNode = tree.addNode(project.getName(), EnumIcon.ProjectSmall);
+        projectNode = tree.addNode(project.getName()+ (project.hasUnsavedChanges() ? "*" : ""), EnumIcon.ProjectSmall);
         putStorage(project, projectNode);
+        tree.setSelection(projectNode);
       }
       
       for(ModelStorage model : project.getStorages()) {
@@ -82,11 +89,11 @@ import javax.swing.tree.TreeSelectionModel;
         if(storages.containsValue(model)) {
           modelNode = nodes.get(model);
           modelNode.setUserObject(modelName);
-          continue;
+        } else {
+          modelNode = tree.addNode(projectNode, modelName, EnumIcon.fromModelType(model.getModelType(), true));
+          tree.setSelection(modelNode);
+          putStorage(model, modelNode);
         }
-        modelNode = tree.addNode(projectNode, modelName, EnumIcon.fromModelType(model.getType(), true));
-        tree.setSelection(modelNode);
-        putStorage(model, modelNode);
       }
     }
     tree.refresh();
@@ -115,6 +122,10 @@ import javax.swing.tree.TreeSelectionModel;
   @Override
   public void storageChanged(Storage changedStorage) {
     updateTree();
+    ProjectStorage activeStorage = projectsStorages.getActiveStorage();
+    if(activeStorage != null) {
+      ui.propertyTable.displayProperties(activeStorage);
+    }
   }
   
   protected Storage getStorage(IconTreeNode node) {
@@ -126,7 +137,9 @@ import javax.swing.tree.TreeSelectionModel;
   }
   
   protected boolean isActive(ProjectStorage project) {
-    return projectsStorages.getActiveStorage().equals(project);
+    ProjectStorage activeStorage = projectsStorages.getActiveStorage();
+    if(activeStorage == null) return false;
+    return activeStorage.equals(project);
   }
   
   protected boolean isActive(ModelStorage model) {
@@ -135,5 +148,23 @@ import javax.swing.tree.TreeSelectionModel;
     ModelStorage activeModel = activeProject.getActiveStorage();
     if(activeModel == null) return false;
     return activeModel.equals(model);
+  }
+
+  @Override
+  public void storageSelectionChanged(StorageContainer container) {}
+
+  @Override
+  public void storageAdded(Storage addedStorage, StorageContainer container) {
+    updateTree();
+  }
+
+  @Override
+  public void storageRemoved(Storage removedStorage, StorageContainer container) {
+    System.out.println(removedStorage);
+    IconTreeNode node = nodes.get(removedStorage);
+    ((IconTreeNode) node.getParent()).remove(node);
+    removeStorage(removedStorage);
+    
+    updateTree();
   }
 }

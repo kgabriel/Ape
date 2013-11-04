@@ -53,5 +53,4 @@ public enum EnumCommandReceiverType {
     str += "}";
     return str;
   }
-  
 }

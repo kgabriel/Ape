@@ -4,10 +4,12 @@
  */
 package ape.petri.pt;
 
-import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.ArcCollection;
 import ape.petri.generic.net.ArcElement;
 import ape.petri.generic.net.ArcElementData;
+import ape.util.Property;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class describes the data, an {@link ArcElement} in a P/T net is equipped with. 
@@ -18,21 +20,9 @@ import ape.petri.generic.net.ArcElementData;
  */
 public class PTArcElementData extends ArcElementData {
 
-  /**
-   * Creates a new empty arc data element for a P/T net.
-   */
-  public PTArcElementData() {
-    super(EnumNetType.PTNet);
+  @Override
+  public List<Property> getProperties() {
+    return new ArrayList<>();
   }
 
-  /**
-   * Checks compatibility of this arc data with another one.
-   * Since arcs in a P/T net do not have any data, the arc data is always compatible.
-   * @param ad the arc data to check compatibility with
-   * @return always <code>true</code>
-   */
-  @Override
-  public boolean isCompatibleWith(ArcElementData ad) {
-    return true;
-  }  
 }

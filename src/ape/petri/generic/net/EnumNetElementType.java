@@ -8,7 +8,7 @@ package ape.petri.generic.net;
  *
  * @author Gabriel
  */
-public enum EnumElementType {
+public enum EnumNetElementType {
 
   ArcElement("ArcElement"),
   ArcCollection("ArcCollection"),
@@ -17,7 +17,7 @@ public enum EnumElementType {
   
   String name;
   
-  EnumElementType(String name) {
+  EnumNetElementType(String name) {
     this.name = name;
   }
   

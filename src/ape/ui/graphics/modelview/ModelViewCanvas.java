@@ -7,7 +7,7 @@ package ape.ui.graphics.modelview;
 import ape.ui.UI;
 import ape.ui.control.CommandReceiver;
 import ape.ui.control.EnumCommandReceiverType;
-import ape.ui.graphics.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.generic.Visual;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.JComponent;
@@ -16,14 +16,8 @@ import javax.swing.JComponent;
  * A canvas that is used to display {@link ModelView}s. 
  * @author Gabriel
  */
-public class ModelViewCanvas extends JComponent implements CommandReceiver, ComponentListener, 
-        MouseMotionListener, MouseListener {
+public class ModelViewCanvas extends JComponent implements CommandReceiver, ComponentListener {
   
-  /**
-   * The action that is currently selected.
-   */
-  private EnumModelViewAction selectedAction;
-
   /**
    * The <code>ModelView</code> that is currently displayed.
    */
@@ -45,8 +39,6 @@ public class ModelViewCanvas extends JComponent implements CommandReceiver, Comp
 
   private void init() {
     addComponentListener(this);
-    addMouseMotionListener(this);
-    addMouseListener(this);
   }
   
   /**
@@ -106,8 +98,13 @@ public class ModelViewCanvas extends JComponent implements CommandReceiver, Comp
 
   @Override
   protected void paintComponent(Graphics g) {
-//    super.paintComponent(g);
     paint(g);
+  }
+  
+  public void selectedActionChanged(EnumModelViewAction action) {
+    if(modelView != null) {
+      modelView.selectedActionChanged(action);
+    }
   }
   
   
@@ -120,17 +117,6 @@ public class ModelViewCanvas extends JComponent implements CommandReceiver, Comp
     repaint();
   }
   
-  public EnumModelViewAction getSelectedAction() {
-    return selectedAction;
-  }
-  
-  public void setSelectedAction(EnumModelViewAction action) {
-    selectedAction = action;
-    if(modelView != null) {
-      modelView.selectedActionChanged(action);
-    }
-  }
-
   @Override
   public void componentShown(ComponentEvent e) {}
   
@@ -139,69 +125,5 @@ public class ModelViewCanvas extends JComponent implements CommandReceiver, Comp
 
   @Override
   public void componentMoved(ComponentEvent e) {}
-
-  @Override
-  public void mouseDragged(MouseEvent e) {
-    if(modelView == null || selectedAction == null) return;
-    Point lastMouseLocation = modelView.getMouseLocation();
-    Point mouseLocation = modelView.toViewCoordinate(e.getPoint());
-    modelView.setMouseLocation(mouseLocation);
-    int dx = mouseLocation.x - lastMouseLocation.x;
-    int dy = mouseLocation.y - lastMouseLocation.y;
-    modelView.mouseMoved(selectedAction, dx, dy);
-    repaint();
-  }
-
-  @Override
-  public void mouseMoved(MouseEvent e) {
-    if(modelView == null || selectedAction == null) return;
-    Point lastMouseLocation = modelView.toDeviceCoordinate(modelView.getMouseLocation());
-    Point mouseLocation = e.getPoint();
-    modelView.setMouseLocation(modelView.toViewCoordinate(mouseLocation));
-    int dx = lastMouseLocation.x - mouseLocation.x;
-    int dy = lastMouseLocation.y - mouseLocation.y;
-    modelView.mouseMoved(selectedAction, dx, dy);
-    repaint();
-  }
-  
-  private static boolean leftButton(MouseEvent e) {
-    return e.getButton() == MouseEvent.BUTTON1;
-  }
-
-  @Override
-  public void mouseClicked(MouseEvent e) {
-    if(modelView == null || selectedAction == null) return;
-    if(! leftButton(e)) return;
-    
-    Point location = modelView.toViewCoordinate(e.getPoint());
-    modelView.mouseClick(selectedAction, e.getModifiersEx());
-    repaint();
-  }
-
-  @Override
-  public void mousePressed(MouseEvent e) {
-    if(modelView == null || selectedAction == null) return;
-    if(! leftButton(e)) return;
-    
-    modelView.setMouseDown(true);
-    modelView.mousePress(selectedAction, e.getModifiersEx());
-    repaint();
-  }
-
-  @Override
-  public void mouseReleased(MouseEvent e) {
-    if(modelView == null || selectedAction == null) return;
-    if(! leftButton(e)) return;
-
-    modelView.setMouseDown(false);
-    modelView.mouseRelease(selectedAction, e.getModifiersEx());
-    repaint();
-  }
-
-  @Override
-  public void mouseEntered(MouseEvent e) {}
-
-  @Override
-  public void mouseExited(MouseEvent e) {}
 
 }

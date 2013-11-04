@@ -8,7 +8,6 @@ import ape.org.ModelStorage;
 import ape.org.ProjectCollection;
 import ape.org.ProjectStorage;
 import ape.ui.UI;
-import jpl.fli.Prolog;
 
 
 /**
@@ -26,8 +25,6 @@ public class Ape {
   public static void main(String[] args) {
 
     Ape theApe = new Ape();
-    ape.prolog.Prolog.initialize();
-//    PLTest.test();
   }
   
   public Ape() {

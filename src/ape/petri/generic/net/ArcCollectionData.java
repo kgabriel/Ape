@@ -4,10 +4,14 @@
  */
 package ape.petri.generic.net;
 
-import ape.petri.generic.EnumNetType;
+import ape.petri.generic.DataChangeListener;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
+import ape.util.PropertyReadOnly;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class represents the data of an {@link ArcCollection}.
@@ -15,20 +19,20 @@ import java.util.Iterator;
  * that are contained in the corresponding {@link ArcCollection}.
  * @author Gabriel
  */
-public class ArcCollectionData extends Data implements DataChangeListener {
+public abstract class ArcCollectionData extends Data implements DataChangeListener {
   
   /** 
    * The collection of {@link ArcElementData} elements contained in this data.
    */
   private Collection<ArcElementData> dataElements;
-
+  
   /**
    * New data for an {@link ArcCollection}. It contains a set of {@link ArcElementData}s
-   * and has element type of {@link EnumElementType#ArcCollection}.
+   * and has element type of {@link EnumNetElementType#ArcCollection}.
    * @param netType the net type of the arc collection having this data element
    */
-  public ArcCollectionData(EnumNetType netType) {
-    super(netType, EnumElementType.ArcCollection);
+  public ArcCollectionData() {
+    super();
     dataElements = new HashSet<>();
   }
   
@@ -47,6 +51,7 @@ public class ArcCollectionData extends Data implements DataChangeListener {
   public void addDataElement(ArcElementData data) {
     data.addDataChangeListener(this);
     dataElements.add(data);
+    dataHasChanged();
   }
   
   /**
@@ -56,6 +61,7 @@ public class ArcCollectionData extends Data implements DataChangeListener {
    */
   public boolean removeDataElement(ArcElementData data) {
     data.removeDataChangeListener(this);
+    dataHasChanged();
     return dataElements.remove(data);
   }
   
@@ -68,12 +74,20 @@ public class ArcCollectionData extends Data implements DataChangeListener {
   }
 
   /**
-   * The {@link DataChangeListener#dataChanged(ape.petri.generic.Data)} implementation.
+   * The {@link DataChangeListener#dataChanged(ape.petri.generic.net.Data)} implementation.
    * If one of the components has changed, also the collection has changed.
    * @param changedData the data element in this collection that has changed
    */
   @Override
   public void dataChanged(Data changedData) {
     dataHasChanged();
+  }
+
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+
+    properties.addAll(((ArcCollection) getModelElement()).getProperties());
+    return properties;
   }
 }

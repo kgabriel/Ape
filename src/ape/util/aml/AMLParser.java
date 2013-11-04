@@ -41,25 +41,33 @@ public class AMLParser {
   
   private AMLNode parseNode() throws AMLParserException {
     AMLNode node = new AMLNode();
-    parseOpenTag(node);
-    consumeWhitespaces();
-    while(! lookAhead("</")) {
-      node.addChild(parseNode());
+    if(parseOpenTag(node)) {
       consumeWhitespaces();
+      while(! lookAhead("</")) {
+        node.addChild(parseNode());
+        consumeWhitespaces();
+      }
+      parseCloseTag(node);
     }
-    parseCloseTag(node);
     return node;
   } 
 
-  private void parseOpenTag(AMLNode node) throws AMLParserException {
+  private boolean parseOpenTag(AMLNode node) throws AMLParserException {
     consumeNextChar('<');
     node.setTagName(parseIdentifier());
     consumeWhitespaces();
-    while(lookupNextChar() != '>') {
+    while(lookupNextChar() != '>' && ! lookAhead("/>")) {
       parseAttribute(node);
       consumeWhitespaces();
     }
-    consumeNextChar('>');
+    if(lookAhead("/>")) {
+      consumeNextChar();
+      consumeNextChar();
+      return false;
+    } else {
+      consumeNextChar('>');
+      return true;
+    }
   }
   
   private void parseCloseTag(AMLNode node) throws AMLParserException {

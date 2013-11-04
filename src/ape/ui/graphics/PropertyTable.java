@@ -7,8 +7,6 @@ package ape.ui.graphics;
 import ape.ui.UI;
 import ape.util.Property;
 import ape.util.PropertyContainer;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import javax.swing.JTable;
 
 /**

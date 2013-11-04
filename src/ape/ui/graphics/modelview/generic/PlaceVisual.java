@@ -9,16 +9,16 @@ import ape.util.Property;
 import ape.math.Ray2D;
 import ape.math.Vector2D;
 import ape.petri.generic.net.Data;
-import ape.petri.generic.net.DataChangeListener;
+import ape.petri.generic.DataChangeListener;
 import ape.petri.generic.net.Place;
 import ape.petri.generic.net.PlaceData;
 import ape.util.aml.AMLNode;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
+import java.util.List;
 
 /**
  * This abstract {@link NodeVisual} models the graphical representation of a place.
@@ -26,18 +26,16 @@ import java.awt.geom.Ellipse2D;
  */
 public abstract class PlaceVisual extends NodeVisual implements DataChangeListener {
   
-  protected Place place;
   protected TextVisual label;
   protected double labelAngle;
   
-  public PlaceVisual(Graphics2D superGraphics, Place place) {
-    this(superGraphics, new Point(0,0), place);
+  public PlaceVisual(Graphics2D superGraphics, PlaceData data, int modelElementId) {
+    this(superGraphics, new Point(0,0), data, modelElementId);
   }
   
-  public PlaceVisual(Graphics2D superGraphics, Point position, Place place) {
-    super(superGraphics);
+  public PlaceVisual(Graphics2D superGraphics, Point position, PlaceData data, int modelElementId) {
+    super(superGraphics, data, modelElementId);
     setResizable(false, false);
-    setPlace(place);
     
     this.labelAngle = VisualGlobalValues.placeLabelStandardPosition;
     label = new TextVisual(superGraphics);
@@ -50,12 +48,12 @@ public abstract class PlaceVisual extends NodeVisual implements DataChangeListen
     setBounds(b);
 
     updateLabelPosition();
-    
-    initProperties();
   }
   
-  private void initProperties() {
-    addProperty(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Interval, "Label Angle", true) {
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+    properties.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Interval, "Label Angle") {
       @Override
       public Object getValue() {
         return labelAngle / (2 * Math.PI);
@@ -67,32 +65,9 @@ public abstract class PlaceVisual extends NodeVisual implements DataChangeListen
         updateLabelPosition();
       }
     });
+    return properties;
   }
   
-  private void setPlace(Place place) {
-    this.place = place;
-    place.getData().addDataChangeListener(this);
-  }
-
-  protected PlaceData getData() {
-    return place.getData();
-  }
-
-  @Override
-  public String getDataName() {
-    return place.getData().getName();
-  }
-
-  @Override
-  public void setDataName(String name) {
-    place.getData().setName(name);
-  }
-
-  @Override
-  public int getNodeId() {
-    return place.getId();
-  } 
-
   protected TextVisual getLabel() {
     return label;
   }
@@ -182,10 +157,10 @@ public abstract class PlaceVisual extends NodeVisual implements DataChangeListen
   }
   
   @Override
-  protected void updateOnResize() {}
+  public void updateOnResize() {}
 
   @Override
-  protected void updateOnMove() {
+  public void updateOnMove() {
     updateLabelPosition();
   }
   
@@ -196,16 +171,10 @@ public abstract class PlaceVisual extends NodeVisual implements DataChangeListen
   }
 
   @Override
-  protected void updateOnUserMove() {
+  public void updateOnUserMove() {
     notifyArcsOnMove();
   }
 
-  @Override
-  protected void updateOnUserMoveFinished() {}
-
-  @Override
-  protected void updateOnUserResize() {}
-  
   @Override
   public void dataChanged(Data changedData) {
     updateLabelContent();
@@ -224,6 +193,10 @@ public abstract class PlaceVisual extends NodeVisual implements DataChangeListen
     return new Ellipse2D.Float(x,y,width,height);
   }
   
+  public String getPlaceName() {
+    return ((PlaceData) data).getName();
+  }
+  
   @Override
   public String getElementTypeName() {
     return "Place";
@@ -233,6 +206,7 @@ public abstract class PlaceVisual extends NodeVisual implements DataChangeListen
   public AMLNode getAMLNode() {
     AMLNode node = super.getAMLNode();
     node.putAttribute("labelAngle", labelAngle);
+    node.putAttribute("elementType", getElementTypeName());
     return node;
   }
 

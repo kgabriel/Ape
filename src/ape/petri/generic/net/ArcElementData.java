@@ -4,8 +4,6 @@
  */
 package ape.petri.generic.net;
 
-import ape.petri.generic.EnumNetType;
-
 /**
  * This interface is used to define the data carried by an {@link ArcElement}.
  * @author Gabriel
@@ -13,14 +11,7 @@ import ape.petri.generic.EnumNetType;
  */
 public abstract class ArcElementData extends Data {
   
-  public ArcElementData(EnumNetType netType) {
-    super(netType, EnumElementType.ArcElement);
+  public ArcElementData() {
+    super();
   }
-  
-  /**
-   * Checks if this arc data is compatible with another one.
-   * @param ad the arc data to be compared with
-   * @return <code>true</code> if this arc data is compatible with <code>ad</code>
-   */
-  public abstract boolean isCompatibleWith(ArcElementData ad);
 }

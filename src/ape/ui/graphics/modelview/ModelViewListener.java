@@ -5,7 +5,6 @@
 package ape.ui.graphics.modelview;
 
 import ape.petri.generic.ModelElement;
-import ape.ui.graphics.modelview.generic.ModelView;
 import ape.ui.graphics.modelview.generic.Visual;
 
 /**

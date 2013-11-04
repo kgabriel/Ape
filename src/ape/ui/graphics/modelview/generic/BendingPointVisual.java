@@ -53,11 +53,11 @@ public class BendingPointVisual extends Visual {
     this.key = number;
   }
   
-  protected boolean isServant() {
+  public boolean isServant() {
     return servant;
   }
   
-  protected boolean isMaster() {
+  public boolean isMaster() {
     return ! servant;
   }
   
@@ -84,13 +84,13 @@ public class BendingPointVisual extends Visual {
   }
 
   @Override
-  protected void updateOnResize() {}
+  public void updateOnResize() {}
 
   @Override
-  protected void updateOnMove() {}
+  public void updateOnMove() {}
 
   @Override
-  protected void updateOnUserMove() {
+  public void updateOnUserMove() {
     parent.bendingPointChangedLocation(this);
     if(servant) {
       servant = false;
@@ -99,13 +99,11 @@ public class BendingPointVisual extends Visual {
   }
 
   @Override
-  protected void updateOnUserMoveFinished() {
+  public void updateOnUserMoveFinished() {
+    super.updateOnUserMoveFinished();
     parent.bendingPointChangedLocationByUser(this,recentlyPromoted);
     recentlyPromoted = false;
 }
-
-  @Override
-  protected void updateOnUserResize() {}
 
   @Override
   public Shape getShape() {

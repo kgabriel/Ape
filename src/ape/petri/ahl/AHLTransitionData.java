@@ -4,15 +4,14 @@
  */
 package ape.petri.ahl;
 
-import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.TransitionData;
 import ape.prolog.Atom;
 import ape.prolog.Compound;
 import ape.prolog.Prolog;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import ape.util.aml.AMLNode;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  *
@@ -40,21 +39,9 @@ public class AHLTransitionData extends TransitionData {
    * Prolog terms
    */
   public AHLTransitionData(String name, Set<Compound> conditions) {
-    super(EnumNetType.AHLNet, name);
+    super(name);
     this.conditions = conditions;
     computeConditionVariables();
-  }
-
-  /**
-   * Checks compatibility of this place data with another one.
-   * Since transitions in a P/T net do not have any data other than their name that is not relevant
-   * for compatibility, the transition data is always compatible.
-   * @param td the transition data to check compatibility with
-   * @return always <code>true</code>
-   */
-  @Override
-  public boolean isCompatibleWith(TransitionData td) {
-    return true;
   }
   
   public Set<Compound> getConditions() {
@@ -77,6 +64,27 @@ public class AHLTransitionData extends TransitionData {
   
   public Set<Atom> getConditionVariables() {
     return new HashSet<>(conditionVars);
+  }
+
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+    properties.add(new Property(Property.CATEGORY_VALUES, this, EnumPropertyType.MultiLineText, "Conditions") {
+
+      @Override
+      public Object getValue() {
+        return Prolog.toString(getConditions());
+      }
+
+      @Override
+      public void setValue(Object value) {
+        Collection<Compound> terms = Prolog.parseCompoundSequence((String) value, false);
+        Set<Compound> cond = new HashSet<>(terms.size());
+        cond.addAll(terms);
+        setConditions(cond);
+      }
+    });
+    return properties;
   }
 
   @Override

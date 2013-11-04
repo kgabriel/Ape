@@ -15,7 +15,7 @@ import ape.petri.pt.PTNet;
 import ape.petri.pt.PTPlaceData;
 import ape.petri.pt.PTTransitionData;
 import ape.ui.UI;
-import ape.ui.graphics.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.ModelView;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.*;
@@ -89,7 +89,7 @@ public class Test extends Thread implements KeyListener {
       Net net = new PTNet();
       Place p = net.addPlace(new PTPlaceData("Place 0 \n: wavelet")); //\rwith \rsome extra \rtext\rand extra lines \r\rand whatnotall...
       Transition t = net.addTransition(new PTTransitionData("Transition 0"));
-      ModelStorage modelStorage = new ModelStorage(EnumModelType.Net, net, new ModelView(ape.ui, net));
+      ModelStorage modelStorage = new ModelStorage(net, ape.ui);
       projectStorage = new ProjectStorage();
       projectStorage.addStorage(modelStorage);
       save(projectStorage, file);

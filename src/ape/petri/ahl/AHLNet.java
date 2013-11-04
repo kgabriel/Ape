@@ -15,7 +15,7 @@ import ape.petri.validity.Validity;
 public class AHLNet extends Net {
   
   public AHLNet() {
-    super(EnumNetType.AHLNet);    
+    super(EnumNetType.AHLNet, new AHLDataFactory());    
   }
 
   @Override

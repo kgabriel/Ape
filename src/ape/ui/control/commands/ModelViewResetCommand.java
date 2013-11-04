@@ -8,13 +8,13 @@ import ape.Ape;
 import ape.ui.control.CommandEvent;
 import ape.ui.control.EnumCommandReceiverType;
 import ape.ui.control.EnumInvocationType;
-import ape.ui.graphics.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.ModelView;
 
 /**
  *
  * @author Gabriel
  */
-public class CommandModelViewReset implements Command {
+public class ModelViewResetCommand implements Command {
 
   @Override
   public String getName() {
@@ -55,5 +55,10 @@ public class CommandModelViewReset implements Command {
   @Override
   public boolean isAlwaysActive() {
     return false;
+  }
+
+  @Override
+  public boolean canUserDefineInvocationBinding() {
+    return true;
   }
 }

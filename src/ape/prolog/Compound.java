@@ -4,7 +4,6 @@
  */
 package ape.prolog;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -12,7 +11,7 @@ import java.util.Objects;
  *
  * @author Gabriel
  */
-public class Compound  implements Serializable {
+public class Compound {
 
   Atom name;
   Atom[] args;

@@ -4,24 +4,13 @@
  */
 package ape.petri.generic.net;
 
-import ape.petri.generic.EnumNetType;
-
 /**
  * This interface is used to define the data carried by a place.
  * @author Gabriel
  */
 public abstract class PlaceData extends NodeData {
 
-  public PlaceData(EnumNetType netType, String name) {
-    super(netType, EnumElementType.Place, name);
+  public PlaceData(String name) {
+    super(name);
   }
-  
-  /**
-   * Checks if this place data is compatible with another one.
-   * @param pd the place data to be compared with
-   * @return <code>true</code> if this arc data is compatible with <code>pd</code>
-   */
-  public abstract boolean isCompatibleWith(PlaceData pd);
-  
-  
 }

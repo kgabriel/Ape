@@ -6,23 +6,26 @@ package ape.ui.control.actions.global;
 
 import ape.Ape;
 import ape.org.ProjectStorage;
-import ape.ui.control.actions.GlobalAction;
+import ape.ui.control.actions.Action;
 import ape.util.IO;
 
 /**
  *
  * @author Gabriel
  */
-public class SaveProjectAction extends GlobalAction {
+public class SaveProjectAction extends Action {
+  
+  private boolean saveAs;
 
-  public SaveProjectAction(Ape theApe) {
-    super(theApe);
+  public SaveProjectAction(Ape theApe, boolean saveAs) {
+    super(theApe, "Save Project" + (saveAs ? " As" : ""));
+    this.saveAs = saveAs;
   }
 
   @Override
-  public void invoke() {
+  protected void onInvocation() {
     ProjectStorage activeProject = theApe.projects.getActiveStorage();
     if(activeProject == null) return;
-    IO.saveProject(activeProject, theApe.ui);
+    IO.saveProject(activeProject, theApe.ui, saveAs);
   }
 }

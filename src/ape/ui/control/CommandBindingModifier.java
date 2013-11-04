@@ -4,6 +4,8 @@
  */
 package ape.ui.control;
 
+import ape.util.aml.AMLNode;
+import ape.util.aml.AMLWritable;
 import java.awt.event.InputEvent;
 /**
   * This class defines a mask of modifiers (<code>Alt</code>, <code>Alt Graph</code>, <code>Ctrl</code>,
@@ -15,15 +17,20 @@ import java.awt.event.InputEvent;
   * @see CommandManager#activeCommands
   * @author Gabriel
   */
-public class CommandBindingModifier {
+public class CommandBindingModifier implements AMLWritable {
   
   /** Modifiers that should be pressed for activation. */
   private int onMask;
   
   /** Modifiers that must not be pressed for activation. */
   private int offMask;
+  
+  /** Constant for a mask containing no modifiers. */
+  public final static int NO_MASK = 0;
 
-  /** An empty modifier mask. No modifiers are specified. */
+  /** An empty modifier mask. No (positive) modifiers are specified. 
+   * @see CommandBindingModifier#CommandBindingModifier(int) 
+   */
   public CommandBindingModifier() {
     this(0);
   }
@@ -121,5 +128,44 @@ public class CommandBindingModifier {
     hash = 53 * hash + this.onMask;
     hash = 53 * hash + this.offMask;
     return hash;
+  }
+
+  @Override
+  public String getAMLTagName() {
+    return "Modifier";
+  }
+  
+  private AMLNode getMaskNode(String tagName, int mask) {
+    AMLNode node = new AMLNode(tagName);
+    node.putAttribute("Alt", (mask & InputEvent.ALT_DOWN_MASK) != 0);
+    node.putAttribute("AltGraph", (mask & InputEvent.ALT_GRAPH_DOWN_MASK) != 0);
+    node.putAttribute("Ctrl", (mask & InputEvent.CTRL_DOWN_MASK) != 0);
+    node.putAttribute("Meta", (mask & InputEvent.META_DOWN_MASK) != 0);
+    node.putAttribute("Shift", (mask & InputEvent.SHIFT_DOWN_MASK) != 0);
+    return node;
+  }
+  
+  private int readMaskNode(AMLNode node) {
+    int mask = 0;
+    if(node.getAttributeBoolean("Alt")) mask |= InputEvent.ALT_DOWN_MASK;
+    if(node.getAttributeBoolean("AltGraph")) mask |= InputEvent.ALT_GRAPH_DOWN_MASK;
+    if(node.getAttributeBoolean("Ctrl")) mask |= InputEvent.CTRL_DOWN_MASK;
+    if(node.getAttributeBoolean("Meta")) mask |= InputEvent.META_DOWN_MASK;
+    if(node.getAttributeBoolean("Shift")) mask |= InputEvent.SHIFT_DOWN_MASK;
+    return mask;
+  }
+
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = new AMLNode(getAMLTagName());
+    node.addChild(getMaskNode("On", onMask));
+    node.addChild(getMaskNode("Off", offMask));
+    return node;
+  }
+
+  @Override
+  public void readAMLNode(AMLNode node) {
+    onMask = readMaskNode(node.getFirstChild("On"));
+    offMask = readMaskNode(node.getFirstChild("Off"));
   }
 }

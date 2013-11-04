@@ -7,7 +7,7 @@ package ape.util;
 import ape.Ape;
 import ape.petri.generic.EnumModelType;
 import ape.petri.generic.net.EnumArcDirection;
-import ape.petri.generic.net.EnumElementType;
+import ape.petri.generic.net.EnumNetElementType;
 import ape.petri.generic.EnumNetType;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -25,6 +25,9 @@ public enum EnumIcon {
   BlankSmall("blank_small", true),
   
   Selection("selection", false),
+  
+  Delete("delete",false),
+  DeleteSmall("delete_small", true),
   
   Arc("arc", false),
   ArcSmall("arc_small", true),
@@ -92,7 +95,7 @@ public enum EnumIcon {
     return icon;
   }
   
-  public static EnumIcon fromElementType(EnumElementType type, boolean small) {
+  public static EnumIcon fromElementType(EnumNetElementType type, boolean small) {
     switch(type) {
       case ArcElement:
         return (small ? ArcSmall : Arc);

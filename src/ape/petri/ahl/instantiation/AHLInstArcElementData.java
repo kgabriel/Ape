@@ -16,7 +16,6 @@ public class AHLInstArcElementData extends AHLArcElementData {
 
   public AHLInstArcElementData(Atom inscription) {
     super(inscription);
-    setNetType(EnumNetType.AHLInstantiation);
   }
 
   public AHLInstArcElementData(String inscription) {

@@ -4,7 +4,6 @@
  */
 package ape.ui.graphics.modelview.pt;
 
-import ape.petri.generic.net.Transition;
 import ape.petri.pt.PTTransitionData;
 import ape.ui.graphics.modelview.generic.TransitionVisual;
 import java.awt.Graphics2D;
@@ -16,12 +15,12 @@ import java.awt.Point;
  */
 public class PTTransitionVisual extends TransitionVisual {
 
-  public PTTransitionVisual(Graphics2D superGraphics, Transition transition) {
-    super(superGraphics, transition);
+  public PTTransitionVisual(Graphics2D superGraphics, PTTransitionData data, int modelElementId) {
+    super(superGraphics, data, modelElementId);
   }
   
-  public PTTransitionVisual(Graphics2D superGraphics, Point position, Transition transition) {
-    super(superGraphics, position, transition);
+  public PTTransitionVisual(Graphics2D superGraphics, Point position, PTTransitionData data, int modelElementId) {
+    super(superGraphics, position, data, modelElementId);
   }
 
   @Override

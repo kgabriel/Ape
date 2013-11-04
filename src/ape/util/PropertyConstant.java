@@ -13,7 +13,8 @@ public class PropertyConstant extends Property {
   private final Object value;
 
   public PropertyConstant(String category, Object object, EnumPropertyType type, String name, Object value) {
-    super(category, object, type, name, false);
+    super(category, object, type, name);
+    this.editable = false;
     this.value = value;
   }
 

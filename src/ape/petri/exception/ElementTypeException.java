@@ -4,7 +4,7 @@
  */
 package ape.petri.exception;
 
-import ape.petri.generic.net.EnumElementType;
+import ape.petri.generic.net.EnumNetElementType;
 
 /**
  * This exception is thrown if someone tries to create a malformed arc, that is, an arc
@@ -21,7 +21,7 @@ public class ElementTypeException extends RuntimeException {
     super("Wrong element type! " + msg);
   }
   
-  public ElementTypeException(EnumElementType expected, EnumElementType found) {
+  public ElementTypeException(EnumNetElementType expected, EnumNetElementType found) {
     this("Expected " + expected + ". Found " + found + ".");
   }
 }

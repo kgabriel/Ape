@@ -13,13 +13,10 @@ import ape.util.aml.AMLNode;
  * by the corresponding {@link ArcCollection} or {@link Net}.
  * @author Gabriel
  */
-public class ArcElement implements NetElement, Arc {
+public class ArcElement extends NetElement implements Arc {
   
   /** the parent collection containing this element */
   protected ArcCollection collection;
-  
-  /** the data of this arc element */
-  protected ArcElementData data;
   
   /**
    * A new arc element inside the specified collection. The element naturally
@@ -27,8 +24,8 @@ public class ArcElement implements NetElement, Arc {
    * @param col the parent collection of this element
    */
   public ArcElement(ArcCollection col, ArcElementData data) {
-    collection = col;
-    this.data = data;
+    super(col.net, data);
+    this.collection = col;
   }
   
  /**
@@ -62,18 +59,11 @@ public class ArcElement implements NetElement, Arc {
    * Returns the data of this element. 
    * @return the data of this <code>ArcElement</code>
    */
+  @Override
   public ArcElementData getData() {
-    return data;
+    return (ArcElementData) super.getData();
   }
 
-  /**
-   * Sets the data of this element to a new value.
-   * @param data the data to be set
-   */
-  public void setData(ArcElementData data) {
-    this.data = data;
-  }
-  
   /**
    * The source of this arc.
    * @return the source node of the collection, containing this arc
@@ -119,28 +109,9 @@ public class ArcElement implements NetElement, Arc {
     collection = col;
   }
 
-  /**
-   * Returns the id of the collection, containing this element. An
-   * <code>ArcElement</code> does not have an own Id.
-   * @return the value returned by the {@link NetElement#getId()} method of this element's collection
-   */
   @Override
-  public int getId() {
-    return collection.getId();
-  }
-
-  /**
-   * Returns the net containing this arc element.
-   * @return the net, containing the collection that contains this arc element
-   */
-  @Override
-  public Net getNet() {
-    return collection.getNet();
-  }
-
-  @Override
-  public EnumElementType getElementType() {
-    return EnumElementType.ArcElement;
+  public EnumNetElementType getElementType() {
+    return EnumNetElementType.ArcElement;
   }
 
   @Override
@@ -151,13 +122,13 @@ public class ArcElement implements NetElement, Arc {
   @Override
   public AMLNode getAMLNode() {
     AMLNode node = new AMLNode(getAMLTagName());
-    node.addChild(data.getAMLNode());
+    node.addChild(getData().getAMLNode());
     return node;
   }
 
   @Override
   public void readAMLNode(AMLNode node) {
     AMLNode dataNode = node.getFirstChild("Data");
-    data.readAMLNode(dataNode);
+    getData().readAMLNode(dataNode);
   }
 }

@@ -15,7 +15,7 @@ public class AMLNode {
 
   String tagName;
   Map<String,String> attributes;
-  List<AMLNode> children;
+  Map<String,List<AMLNode>> children;
   
   public AMLNode() {
     this(null);
@@ -25,7 +25,7 @@ public class AMLNode {
     if(tagName != null) checkIdentifier(tagName);
     this.tagName = tagName;
     this.attributes = new HashMap<>();
-    this.children = new ArrayList<>();
+    this.children = new HashMap<>();
   }
 
   public Map<String, String> getAttributes() {
@@ -41,7 +41,8 @@ public class AMLNode {
   }
   
   public boolean getAttributeBoolean(String key) {
-    return Boolean.parseBoolean(getAttribute(key));
+    String value = getAttribute(key);
+    return value.equals("1") || value.equals("true");
   }
   
   public Color getAttributeColor(String key) {
@@ -62,7 +63,7 @@ public class AMLNode {
   }
   
   public void putAttribute(String key, boolean value) {
-    putAttribute(key, "" + value);
+    putAttribute(key, value ? "1" : "0");
   }
   
   public void putAttribute(String key, Color value) {
@@ -73,25 +74,18 @@ public class AMLNode {
     putAttribute(key, "" + value);
   }
 
-  public List<AMLNode> getChildren() {
-    return new ArrayList<>(children);
-  }
-  
   public List<AMLNode> getChildren(String tagName) {
-    List<AMLNode> suitableChildren = new ArrayList<>();
-    for(AMLNode node : children) {
-      if(! node.hasTagName(tagName)) continue;
-      suitableChildren.add(node);
+    List<AMLNode> list = new ArrayList<>();
+    if(children.containsKey(tagName.toLowerCase())) {
+      list.addAll(children.get(tagName.toLowerCase()));
     }
-    return suitableChildren;
+    return list;
   }
   
   public AMLNode getFirstChild(String tagName) {
-    for(AMLNode node : children) {
-      if(! node.hasTagName(tagName)) continue;
-      return node;
-    }
-    return null;
+    List<AMLNode> list = getChildren(tagName);
+    if(list.isEmpty()) return null;
+    return list.get(0);
   }
   
   public boolean hasTagName(String tagName) {
@@ -99,11 +93,18 @@ public class AMLNode {
   }
   
   public void addChild(AMLNode child) {
-    this.children.add(child);
+    List<AMLNode> list = children.get(child.tagName.toLowerCase());
+    if(list == null) {
+      list = new ArrayList<>();
+      children.put(child.tagName.toLowerCase(), list);
+    }
+    list.add(child);
   }
 
   public void addChildren(Collection<AMLNode> children) {
-    this.children.addAll(children);
+    for(AMLNode child : children) {
+      addChild(child);
+    }
   }
 
   public String getTagName() {
@@ -125,11 +126,17 @@ public class AMLNode {
     for(String attributeKey : attributes.keySet()) {
       output += writeAttribute(attributeKey, attributes.get(attributeKey));
     }
-    output += ">\n";
-    for(AMLNode child : children) {
-      output += child.write(indentWidth + 1);
+    if(children.isEmpty()) {
+      output += " />\n";
+    } else {
+      output += ">\n";
+      for(List<AMLNode> childList : children.values()) {
+        for(AMLNode child : childList) {
+          output += child.write(indentWidth + 1);
+        }
+      }
+      output += indentation + "</" + tagName + ">\n";
     }
-    output += indentation + "</" + tagName + ">\n";
     return output;
   }
     

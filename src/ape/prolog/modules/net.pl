@@ -1,3 +1,5 @@
+:- use_module(library(clpfd)).
+
 %%%% Utility: Generic Net Creation
 
 % map_to_all(+List,+Functor,+Args,-Result)
@@ -290,8 +292,9 @@ net_conditions(Net,Cond) :-
   findall(C, net_cond(_,C,Net), TCond),
   findall(P = V, net_pre(Trans, V, P, Net), PreCond),
   findall(P = V, net_post(Trans, V, P, Net), PostCond),
-  union(PreCond,PostCond,PrePostCond),
-  union(PrePostCond,TCond,Cond).
+  union(PreCond,PostCond,PrePostCond1),
+  append(PrePostCond1,[!],PrePostCond),
+  append(PrePostCond,TCond,Cond).
 
 
 realization_assignment(Net,Ass) :-
@@ -307,12 +310,42 @@ satisfies_each_condition(Ass,[C|Cond]) :-
   call(C),
   satisfies_each_condition(Ass,Cond).
 
+list_fd_vars([],[]).
+list_fd_vars([E|List],Vars) :-
+  fd_var(E),!,
+  list_fd_vars(List,Rest),
+  union(Rest, [E], Vars).
+list_fd_vars([E|List],Vars) :-
+  is_list(E),!,
+  list_fd_vars(List,Rest),
+  list_fd_vars(E,L),
+  union(Rest, L, Vars).
+list_fd_vars([_|List],Vars) :-
+  list_fd_vars(List,Vars).
+
+assignment_fd_vars([],[]).
+assignment_fd_vars([A|Ass],Vars) :-
+  fd_var(A),!,
+  assignment_fd_vars(Ass,Rest),
+  union(Rest, [A], Vars).
+assignment_fd_vars([A|Ass],Vars) :-
+  is_list(A),!,
+  assignment_fd_vars(Ass,Rest),
+  assignment_fd_vars(A,L),
+  union(Rest, L, Vars).
+assignment_fd_vars([_|Ass],Vars) :-
+  assignment_fd_vars(Ass,Vars).
+
 realization_assignment(Net,Ass,Partial) :-
   net_conditions(Net,Eq),
   net_vars(Net,Vars),!,
   var_assignment(Vars,Ass),
-  %satisfies_conditions(Ass,Eq),
   condition_instances(Ass,Eq),!,
   assignment_conforms_to(Ass,Partial),!,
+  write(Eq),nl,!,
   maplist(call,Eq),
-  type_conform_assignment(Vars,Ass).
+  %type_conform_assignment(Vars,Ass),
+  write('Found a solution, start labelling...'),nl,
+  assignment_fd_vars(Ass,Fd_vars),
+  write(Fd_vars), nl,
+  label(Fd_vars).

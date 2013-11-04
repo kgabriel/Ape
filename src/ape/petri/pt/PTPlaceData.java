@@ -4,7 +4,6 @@
  */
 package ape.petri.pt;
 
-import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.PlaceData;
 
 /**
@@ -18,18 +17,7 @@ public class PTPlaceData extends PlaceData {
    * @param name the name of the place, stored in this data
    */
   public PTPlaceData(String name) {
-    super(EnumNetType.PTNet,name);  
+    super(name);  
   }
 
-  /**
-   * Checks compatibility of this place data with another one.
-   * Since places in a P/T net do not have any data other than their name that is not relevant
-   * for compatibility, the place data is always compatible.
-   * @param pd the place data to check compatibility with
-   * @return always <code>true</code>
-   */
-  @Override
-  public boolean isCompatibleWith(PlaceData pd) {
-    return true;
-  }  
 }

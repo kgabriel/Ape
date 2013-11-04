@@ -5,20 +5,23 @@
 package ape.petri.ahl.instantiation;
 
 import ape.petri.ahl.AHLTransitionData;
-import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.Transition;
-import ape.petri.generic.net.TransitionData;
 import ape.petri.validity.EnumInvalidityType;
 import ape.petri.validity.InvalidityReason;
 import ape.petri.validity.Validity;
 import ape.prolog.Atom;
 import ape.prolog.Compound;
+import ape.prolog.Prolog;
 import ape.prolog.ValueTerm;
 import ape.prolog.exception.PrologOperationArityException;
 import ape.prolog.exception.PrologOperationNotDeclaredException;
+import ape.prolog.exception.PrologParserException;
 import ape.prolog.exception.PrologTypeClashException;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import ape.util.aml.AMLNode;
 import java.util.*;
+import javax.swing.JOptionPane;
 import jpl.Query;
 import jpl.Term;
 import jpl.Util;
@@ -33,7 +36,6 @@ public class AHLInstTransitionData extends AHLTransitionData {
 
   public AHLInstTransitionData(String name, Set<Compound> conditions, Map<Atom,ValueTerm> assignment) {
     super(name, conditions);
-    setNetType(EnumNetType.AHLInstantiation);
     this.assignment = assignment;
   }
   
@@ -47,14 +49,6 @@ public class AHLInstTransitionData extends AHLTransitionData {
     dataHasChanged();
   }
 
-  @Override
-  public boolean isCompatibleWith(TransitionData td) {
-    if(! (td instanceof AHLInstTransitionData)) return false;
-    AHLInstTransitionData data = (AHLInstTransitionData) td;
-    if(! this.getConditions().equals(data.getConditions())) return false;
-    return this.assignment.equals(data.assignment);
-  }
-  
   public Validity validate(Transition parent, Map<Atom,Atom> transitionVars) {
     Validity validity = new Validity(true);
     
@@ -139,12 +133,40 @@ public class AHLInstTransitionData extends AHLTransitionData {
   }
 
   @Override
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+    properties.add(new Property(Property.CATEGORY_VALUES, this, EnumPropertyType.MultiLineText, "Assignment") {
+
+      @Override
+      public Object getValue() {
+        Map<Atom,ValueTerm> assignment = getAssignment();
+        String value = "";
+        boolean first = true;
+        for(Atom var : assignment.keySet()) {
+          if(! first) value += ",\n";
+          value += var + "=" + assignment.get(var);
+          first = false;
+        }
+        return value;
+      }
+
+      @Override
+      public void setValue(Object value) {
+        Map<Atom,ValueTerm> assignment = Prolog.parseAssignmentSequence((String) value);
+        setAssignment(assignment);
+      }
+    });
+    return properties;
+  }
+
+  @Override
   public AMLNode getAMLNode() {
     AMLNode node = super.getAMLNode();
     for(Atom assKey : assignment.keySet()) {
       AMLNode assNode = new AMLNode("Assignment");
       assNode.putAttribute("variable", assKey.toString());
       assNode.putAttribute("value", assignment.get(assKey).toString());
+      node.addChild(assNode);
     }
     return node;
   }

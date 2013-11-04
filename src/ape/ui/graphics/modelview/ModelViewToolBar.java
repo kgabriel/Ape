@@ -4,18 +4,16 @@
  */
 package ape.ui.graphics.modelview;
 
-import ape.petri.generic.Model;
+import ape.petri.generic.EnumModelType;
 import ape.petri.generic.ModelElement;
-import ape.petri.generic.net.*;
 import ape.ui.UI;
-import ape.ui.graphics.modelview.generic.ModelView;
+import ape.ui.control.actions.modelview.DeleteNetElementsAction;
 import ape.ui.graphics.modelview.generic.Visual;
+import ape.util.EnumIcon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
@@ -30,12 +28,18 @@ public class ModelViewToolBar extends JToolBar implements ActionListener, ModelV
   
   private Map<EnumModelViewAction, ModelViewToolBarToggleButton> toggleButtons;
   
+  private EnumModelViewAction selectedAction;
+  
   public ModelViewToolBar(UI ui, int orientation) {
     super();
     this.ui = ui;
     setOrientation(orientation);
     toggleButtons = new HashMap<>();
     init();
+  }
+  
+  public EnumModelViewAction getSelectedAction() {
+    return selectedAction;
   }
   
   private void init() {
@@ -58,45 +62,17 @@ public class ModelViewToolBar extends JToolBar implements ActionListener, ModelV
     setName("Net Toolbar");
     
     for(EnumModelViewAction action : EnumModelViewAction.values()) {
-      addToggleButton(action);
+      if(action.getModelType() == EnumModelType.Net) {
+        addToggleButton(action);
+      }
     }
     
     add(new Separator());
-    addButton(new AbstractAction("Delete", null) {
+    addButton(new DeleteNetElementsAction(ui.theApe).getSwingAction(EnumIcon.Delete.getIcon()));
 
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        ModelView modelView = ui.getActiveModelView();
-        Net net = (Net) modelView.getModel();
-        Set<ModelElement> selection = modelView.getSelection();
-        for(ModelElement element : selection) {
-          if(element instanceof Place) {
-            removeDanglingArcVisuals(modelView, (Node) element);
-            net.removePlace((Place) element);
-          } else if(element instanceof Transition) {
-            removeDanglingArcVisuals(modelView, (Node) element);
-            net.removeTransition((Transition) element);
-          } else if(element instanceof ArcCollection) {
-            net.removeArcCollection((ArcCollection) element);
-          }
-          modelView.removeVisualFor(element);
-        }
-        modelView.repaint();
-      }
-    });
-
-    selectAction(EnumModelViewAction.Selection);
+    selectAction(EnumModelViewAction.NetSelection);
   }
   
-  private void removeDanglingArcVisuals(ModelView modelView, Node n) {
-    for(ArcCollection c: n.getIncomingArcs()) {
-      modelView.removeVisualFor(c);
-    }
-    for(ArcCollection c: n.getOutgoingArcs()) {
-      modelView.removeVisualFor(c);
-    }
-  }
-
   private void addToggleButton(EnumModelViewAction action) {
     ModelViewToolBarToggleButton button = new ModelViewToolBarToggleButton(action);
     button.addActionListener(this);
@@ -121,7 +97,8 @@ public class ModelViewToolBar extends JToolBar implements ActionListener, ModelV
     toggleButtons.get(selectedAction).setSelected(true);
     
     /* tell the model view canvas that the selected action has changed */
-    ui.getModelViewCanvas().setSelectedAction(selectedAction);
+    this.selectedAction = selectedAction;
+    ui.modelViewCanvas.selectedActionChanged(selectedAction);
   }
 
   @Override

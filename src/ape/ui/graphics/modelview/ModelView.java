@@ -2,26 +2,26 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ape.ui.graphics.modelview.generic;
+package ape.ui.graphics.modelview;
 
-import ape.util.EnumPropertyType;
-import ape.util.Property;
-import ape.util.PropertyConstant;
+import ape.org.ModelStorage;
 import ape.petri.generic.EnumModelType;
 import ape.petri.generic.Model;
 import ape.petri.generic.ModelElement;
 import ape.petri.generic.net.*;
 import ape.ui.UI;
-import ape.ui.graphics.modelview.EnumModelViewAction;
-import ape.ui.graphics.modelview.ModelViewCanvas;
-import ape.ui.graphics.modelview.ModelViewListener;
+import ape.ui.graphics.modelview.ahl.AHLVisualFactory;
+import ape.ui.graphics.modelview.ahl.instantiation.AHLInstVisualFactory;
+import ape.ui.graphics.modelview.generic.*;
+import ape.ui.graphics.modelview.pt.PTVisualFactory;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
 import ape.util.PropertyContainer;
 import ape.util.aml.AMLNode;
 import ape.util.aml.AMLWritable;
 import java.awt.*;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.io.Serializable;
 import java.util.List;
 import java.util.*;
 
@@ -63,7 +63,7 @@ import java.util.*;
  * for all drawing operations. 
  * @author Gabriel
  */
-public class ModelView implements PropertyContainer, Serializable, AMLWritable, VisualListener {
+public class ModelView implements PropertyContainer, AMLWritable, VisualListener {
 
   /**
    * The center of the view in <i>view coordinates</i>. As long this was not set manually,
@@ -100,14 +100,14 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
   /**
    * The start position of the selection area in <i>view coordinates</i>. 
    * This point is set, when the left mouse button
-   * is pressed, and the currently selected action is {@link ModelView#ACTION_SELECT}.
+   * is pressed, and the currently selected action is to select an item.
    */
   private Point selectionStartPoint;
   
   /**
    * The end position of the selection area in <i>view coordinates</i>. 
    * It is set, when the left mouse button
-   * is released, and the currently selected action is {@link ModelView#ACTION_SELECT}.
+   * is released, and the currently selected action is to select an item.
    * Note that directly after setting the selection end point, the selection of visuals
    * is updated in correspondence to the rectangle determined by the selection start and end point,
    * and afterwards, the selection start and end point are reset to <code>null</code>.
@@ -116,7 +116,7 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
   
   /**
    * The start point of an arc creation. This point is set, when the left mouse button
-   * is pressed, and the currently selected action is {@link ModelView#ACTION_NEW_ARC},
+   * is pressed, and the currently selected action is to create an arc,
    * but only if there was no start point set before (that is, <code>arcStart</code>
    * was <code>null</code>). Also, it is only set, if the upmost visual in the mouse focus
    * represents a node (place or transition).
@@ -126,46 +126,46 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
   
   /**
    * The end point of an arc creation. This point is set, when the left mouse button
-   * is pressed, and the currently selected action is {@link ModelView#ACTION_NEW_ARC},
+   * is pressed, and the currently selected action is to create an arc,
    * but only if the start point is not set to <code>null</code>. Also, it is only set,
    * if the upmost visual in the focus represents a node (place or transition).
    * If <code>arcStart</code> and <code>arcEnd</code> are set, the <code>ModelView</code>
    * tries to create an an arc between these nodes.
    * @see ModelView#arcStart
-   * @see ModelView#tryToCreateArcFromSelectedNodes() 
+   * @see ModelView#tryToCreateNetArcFromSelectedNodes() 
    */
   private NodeVisual arcEnd;
   
   /**
    * The UI of the program, containing this <code>ModelView</code>.
    */
-  private transient UI ui;
+  private UI ui;
   
   /**
    * The <code>ModelViewCanvas</code>, displaying this <code>ModelView</code>.
    */
-  private transient ModelViewCanvas canvas;
+  private ModelViewCanvas canvas;
   
   /**
    * The image, where the contained {@link Visual}s of this <code>ModelView</code> are drawn to.
    * The image is drawn on the corresponding <code>ModelViewCanvas</code>, whenever this
    * <code>ModelView</code> is redrawn.
    */
-  private transient BufferedImage image;
+  private BufferedImage image;
   
   /**
    * The graphics of the {@link ModelView#image}. It is used to draw the content of this
    * <code>ModelView</code>.
    */
-  private transient Graphics2D graphics;
+  private Graphics2D graphics;
   
   /**
    * A mapping between <code>ModelElement</code>s of this <code>ModelView</code>'s <code>Model</code>
    * and their corresponding <code>Visual</code>s. 
    * <br />
    * Elements should never be added or removed by hand, but instead, using 
-   * {@link ModelView#addVisual(ape.petri.generic.ModelElement, ape.ui.modelview.generic.Visual)}
-   * and {@link ModelView#removeVisual(ape.ui.modelview.generic.Visual)}, respectively.
+   * {@link ModelView#addVisual(ape.petri.generic.ModelElement, ape.ui.graphics.modelview.generic.Visual)}
+   * and {@link ModelView#removeVisual(ape.ui.graphics.modelview.generic.Visual)}, respectively.
    * @see ModelView#modelElements
    */
   private Map<ModelElement,Visual> visualElements;
@@ -175,8 +175,8 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * the <code>Visual</code> represents.
    * <br />
    * Elements should never be added or removed by hand, but instead, using 
-   * {@link ModelView#addVisual(ape.petri.generic.ModelElement, ape.ui.modelview.generic.Visual)}
-   * and {@link ModelView#removeVisual(ape.ui.modelview.generic.Visual)}, respectively.
+   * {@link ModelView#addVisual(ape.petri.generic.ModelElement, ape.ui.graphics.modelview.generic.Visual)}
+   * and {@link ModelView#removeVisual(ape.ui.graphics.modelview.generic.Visual)}, respectively.
    * @see ModelView#visualElements
    */
   private Map<Visual,ModelElement> modelElements;
@@ -188,8 +188,8 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * integer there is at most one <code>Visual</code> with that integer as its z-order.
    * <br />
    * Elements should never be added or removed by hand, but instead, using 
-   * {@link ModelView#addVisual(ape.petri.generic.ModelElement, ape.ui.modelview.generic.Visual)}
-   * and {@link ModelView#removeVisual(ape.ui.modelview.generic.Visual)}, respectively.
+   * {@link ModelView#addVisual(ape.petri.generic.ModelElement, ape.ui.graphics.modelview.generic.Visual)}
+   * and {@link ModelView#removeVisual(ape.ui.graphics.modelview.generic.Visual)}, respectively.
    * @see ModelView#zOrderedVisuals
    */
   private Map<Visual,Integer> visualZOrders;
@@ -198,11 +198,11 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * A mapping between z-order values and <code>Visual</code>s with that z-order.
    * <br />
    * Elements should never be added or removed by hand, but instead, using 
-   * {@link ModelView#addVisual(ape.petri.generic.ModelElement, ape.ui.modelview.generic.Visual)}
-   * and {@link ModelView#removeVisual(ape.ui.modelview.generic.Visual)}, respectively.
+   * {@link ModelView#addVisual(ape.petri.generic.ModelElement, ape.ui.graphics.modelview.generic.Visual)}
+   * and {@link ModelView#removeVisual(ape.ui.graphics.modelview.generic.Visual)}, respectively.
    * @see ModelView#visualZOrders
    */
-  private TreeMap<Integer,Visual> zOrderedVisuals;
+  private SortedMap<Integer,Visual> zOrderedVisuals;
   
   /**
    * A list of all the <code>Visual</code>s that are in the focus, that is,
@@ -227,13 +227,15 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
   /**
    * The model, for which this <code>ModelView</code> is the graphical representation.
    */
-  private Model model;
+  private ModelStorage modelStorage;
   
   /**
-   * The factory that produces new <code>Visual</code>s of the {@link ModelView#model}s
+   * The factory that produces new <code>Visual</code>s of the {@link ModelView#modelStorage}s
    * model type for this <code>ModelView</code>.
    */
   private VisualFactory factory;
+  
+  private boolean loadingInProgress;
   
   /**
    * A new <code>ModelView</code> inside the specified UI, representing the specified model
@@ -241,13 +243,9 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * @param model the {@link Model} for which this <code>ModelView</code> is the graphical
    * representation
    */
-  public ModelView(UI ui, Model model) {
-    this(ui,model,true);
-  }
-
-  public ModelView(UI ui, Model model, boolean updateVisualsFromModel) {
+  public ModelView(UI ui, ModelStorage modelStorage) {
     this.ui = ui;
-    this.model = model;
+    this.modelStorage = modelStorage;
     this.visualElements = new HashMap<>();
     this.modelElements = new HashMap<>();
     this.visualZOrders = new HashMap<>();
@@ -257,17 +255,28 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
     this.visualsInFocus = new ArrayList<>();
     this.upmostVisualInFocus = null;
     this.selectedVisuals = new HashSet<>();
-    init(updateVisualsFromModel);
+    initFactory();
   }
   
   /**
    * Initializes the <code>ModelView</code>. Creates a factory for production of new visuals,
-   * resets the view, and updates all visuals that are contained in the {@link ModelView#model}.
+   * resets the view, and updates all visuals that are contained in the {@link ModelView#modelStorage}.
    */
-  private void init(boolean updateVisualsFromModel) {
-    factory = new VisualFactory(this);
+  private void initFactory() {
+    switch(modelStorage.getNetType()) {
+      case AHLInstantiation:
+        factory = new AHLInstVisualFactory(this);
+        break;
+      case AHLNet:
+        factory = new AHLVisualFactory(this);
+        break;
+      case PTNet:
+        factory = new PTVisualFactory(this);
+        break;
+      default:
+        throw new UnsupportedOperationException("No VisualFactory for net type '" + modelStorage.getNetType() + "'!");
+    }
     resetView();
-    if(updateVisualsFromModel) updateVisualsFromModel();
   }
 
   public UI getUI() {
@@ -289,19 +298,6 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
     modelElements.clear();
     visualZOrders.clear();
     zOrderedVisuals.clear();
-  }
-  
-  /**
-   * Updates all visuals corresponding to the model. It removes all existing visuals
-   * and creates a new visual for every model element in the model.
-   */
-  private void updateVisualsFromModel() {
-    clearAllVisuals();
-    if(model == null) return;
-    Map<ModelElement,Visual> newVisuals = factory.createVisuals(model.getAllElements());
-    for (ModelElement e : newVisuals.keySet()) {
-      addVisual(e, newVisuals.get(e));
-    }
   }
   
   /**
@@ -344,20 +340,12 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * @return the <code>EnumModelType</code> of this <code>ModelView</code>'s <code>Model</code>
    */
   public EnumModelType getModelType() {
-    return model.getModelType();
+    return modelStorage.getModelType();
   }
   
-  /**
-   * Adds a <code>Visual</code> to this <code>ModelView</code> that represents the specified
-   * <code>ModelElement</code>. The <code>Visual</code> is created by this <code>ModelView</code>'s
-   * {@link VisualFactory}.
-   * @param e a <code>ModelElement</code> for which a visual representation is to be added to
-   * this <code>ModelView</code>
-   * @return the <code>Visual</code> that was created and added to this <code>ModelView</code>
-   * as visual representation for <code>e</code>
-   */
   public Visual addVisualFor(ModelElement e) {
     Visual v = factory.createVisual(e);
+    if(v == null) return null;
     addVisual(e,v);
     return v;
   }
@@ -381,15 +369,18 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
     addVisual(e, v, zOrder);
   }
 
-  private void addVisual(ModelElement modelElement, Visual visual, int zOrder) {
-    visualElements.put(modelElement, visual);
-    modelElements.put(visual, modelElement);
+  private void addVisual(ModelElement e, Visual visual, int zOrder) {
+    visualElements.put(e, visual);
+    modelElements.put(visual, e);
     zOrderedVisuals.put(zOrder, visual);
     visualZOrders.put(visual, zOrder);
     visual.addVisualListener(this);
     
     /* notify all listeners in the UI */
-    if(ui != null) ui.visualElementAddedToActiveModelView(modelElement, visual);
+    if(ui != null) {
+      ui.visualElementAddedToActiveModelView(e, visual);
+      notifyStorageOnChanges();
+    }
   }
 
   
@@ -425,13 +416,14 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
   public void removeVisual(Visual v) {
     if(v == null) return;
     v.destroy();
-    ModelElement m = modelElements.remove(v);
-    visualElements.remove(m);
+    ModelElement e = modelElements.remove(v);
+    visualElements.remove(e);
     Integer zOrder = visualZOrders.remove(v);
     zOrderedVisuals.remove(zOrder);
 
     /* notify all listeners in the UI */
-    ui.visualElementRemovedFromActiveModelView(m, v);
+    ui.visualElementRemovedFromActiveModelView(e, v);
+    notifyStorageOnChanges();
   }
   
   /**
@@ -440,9 +432,9 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * @param e the <code>ModelElement</code> corresponding to the returned <code>Visual</code>
    * @return the <code>Visual</code> element that represents <code>e</code>, or <code>null</code>
    * if there is no visual representation for <code>e</code>
-   * @see ModelView#getModelElement(ape.ui.modelview.generic.Visual) 
+   * @see ModelView#getModelElement(ape.ui.graphics.modelview.generic.Visual) 
    */
-  protected Visual getVisual(ModelElement e) {
+  public Visual getVisual(ModelElement e) {
     return visualElements.get(e);
   }
 
@@ -565,7 +557,7 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
   
   /**
    * Returns a <i>view coordinate</i> rectangle that represents the current user selection.
-   * The user selection is set, when the currently active action is {@link EnumModelViewAction#Selection}
+   * The user selection is set, when the currently active action is {@link EnumModelViewAction#NetSelection}
    * and the user presses (setting the start point) the left mouse button, and
    * afterwards moves (setting the end point) the mouse.
    * Note that right after the mouse button was released, the set of selected elements is updated and
@@ -1099,7 +1091,7 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * @return this <code>ModelView</code>'s <code>Model</code>
    */
   public Model getModel() {
-    return model;
+    return modelStorage.getModel();
   }
 
   /**
@@ -1179,24 +1171,44 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
   }
   
   public void selectionUpdated() {
+    
+    checkArcSelection();
     if(selectedVisuals.isEmpty()) {
-      ui.getPropertyTable().displayProperties(this);
+      ui.getPropertyTable().displayProperties(ui.theApe.getActiveModel());
       return;
     }
 
-    Visual v = (Visual) selectedVisuals.toArray()[0];
-    ui.getPropertyTable().displayProperties(v);
+    Iterator<Visual> iterator = selectedVisuals.iterator();
+    Visual v = (Visual) iterator.next();
+    while(v instanceof BendingPointVisual || ! (v instanceof ModelElementVisual)) {
+      v = iterator.next();
+    }
+    ModelElementVisual mv = (ModelElementVisual) v;
+    ui.getPropertyTable().displayProperties(modelStorage.getModelElementPropertyContainer(mv.getModelElementId()));
+  }
+  
+  private void checkArcSelection() {
+    List<ArcVisual> arcs = new ArrayList<>();
+    for(Visual v : selectedVisuals) {
+      if(v instanceof ArcVisual) arcs.add((ArcVisual) v);
+    }
+    selectedVisuals.removeAll(arcs);
+    arcs.clear();
+    for(Visual v : selectedVisuals) {
+      if(v instanceof BendingPointVisual) arcs.add(((BendingPointVisual) v).getParent());
+    }
+    selectedVisuals.addAll(arcs);
   }
   
   @Override
   public List<Property> getProperties() {
     List<Property> props = new ArrayList<>();
     
-    props.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Model Type", model.getModelType().getName()));
+    props.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.SingleLineText, "Model Type", modelStorage.getModelType().getName()));
     
-    props.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Net Class", model.getNetType().getName()));
+    props.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.SingleLineText, "Net Class", modelStorage.getNetType().getName()));
     
-    props.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "View Center X", true) {
+    props.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "View Center X") {
 
       @Override
       public Object getValue() {
@@ -1209,7 +1221,7 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
       }
     });
 
-    props.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "View Center Y", true) {
+    props.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "View Center Y") {
       @Override
       public Object getValue() {
         return viewCenter.y;
@@ -1221,7 +1233,7 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
       }
     });
     
-    props.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Interval, "Scaling", true) {
+    props.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Interval, "Scaling") {
       @Override
       public Object getValue() {
         double range = VisualGlobalValues.modelMaxScale - VisualGlobalValues.modelMinScale;
@@ -1269,6 +1281,10 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
       if(v.hasSelectableChildren()) {
         for(Visual c : v.getSelectableChildren()) {
           if(! c.getShape().intersects(selection)) continue;
+          /* servant bending points are not included in a multi-selection */
+          if(c instanceof BendingPointVisual) {
+            if(((BendingPointVisual) c).isServant()) continue;
+          }
           updateSelection(xor, c);
         }
       }
@@ -1288,7 +1304,8 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * @see Visual#isSelectable() 
    */
   private void updateSelection(boolean xor, Visual v) {
-    if(v instanceof BendingPointVisual) selectedVisuals.add(((BendingPointVisual)v).getParent());
+    /* for bending points include also the arc into the selection, e.g. for deletion of the arc;
+     nonetheless, the single bending points are also included, e.g. for moving them */
     if(xor && selectedVisuals.contains(v)) {
       selectedVisuals.remove(v);
     } else {
@@ -1318,9 +1335,18 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
     if(! add) selectedVisuals.clear();
     Visual v = getUpmostVisualInFocus();
     if(v == null) return;
+    updateSingleSelection(v, xor);
+  }
+  
+  private void updateSingleSelection(Visual v, boolean xor) {
     updateSelection(xor, v);
     if(v.hasSelectableChildren()) {
-      for(Visual c : v.getSelectableChildren()) {
+      Collection<Visual> children = v.getSelectableChildren();
+      for(Visual c : children) {
+        /* servant bending points are only included when they are selected explicitly, or if there is no master */
+        if(c instanceof BendingPointVisual && children.size() > 1) {
+          if(((BendingPointVisual) c).isServant()) continue;
+        }
         updateSelection(xor, c);
       }
     }
@@ -1329,17 +1355,17 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
   
   public void setSelectionTo(Visual v) {
     selectedVisuals.clear();
-    selectedVisuals.add(v);
+    updateSingleSelection(v, false);
     selectionUpdated();
   }
   
-  public void setSelectionTo(ModelElement m) {
-    Visual v = visualElements.get(m);
+  public void setSelectionTo(ModelElement e) {
+    Visual v = visualElements.get(e);
     setSelectionTo(v);
   }
   
-  public void setSelectionAndViewCenterTo(ModelElement m) {
-    Visual v = visualElements.get(m);
+  public void setSelectionAndViewCenterTo(ModelElement e) {
+    Visual v = visualElements.get(e);
     setSelectionTo(v);
     setViewCenterAndTranslateGraphics(v.getX(), v.getY());
   }
@@ -1357,7 +1383,7 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * @param dx the horizontal translation amount
    * @param dy the vertical translation amount
    */
-  private void translateSelectedVisuals(int dx, int dy) {
+  public void translateSelectedVisuals(int dx, int dy) {
     for(Visual v : selectedVisuals) {
       v.translateIfPossible(dx, dy);
     }
@@ -1368,68 +1394,10 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
    * moved by the user.
    * @see Visual#updateOnUserMoveFinished() 
    */
-  private void notifyMovedVisuals() {
+  public void notifyMovedVisuals() {
     for(Visual v : selectedVisuals) {
       v.updateOnUserMoveFinished();
     }
-  }
-  
-  /**
-   * This method tries to create an arc between the {@link Node}s corresponding to the specified
-   * {@link NodeVisual}s, and if it has success, it adds a corresponding {@link ArcVisual} to
-   * this <code>ModelView</code>. The creation of the arc is successful, if there is not already
-   * an arc between the nodes with the specified direction.
-   * <br />
-   * The <code>Model</code> of this <code>ModelView</code> has to be a {@link Net}, or otherwise
-   * the call of this method will probably lead to an exception.
-   * @param pOfArc the <code>PlaceVisual</code>, representing the {@link Place} of the arc that
-   * is to be created
-   * @param tOfArc the <code>TransitionVisual</code>, representing the {@link Transition} of
-   * the arc that is to be created
-   * @param dir the direction of the arc that is to be created
-   * @return if the creation was successful then the newly created arc is returned, and 
-   * <code>null</code> otherwise
-   */
-  private Visual tryToCreateArc(PlaceVisual pOfArc, TransitionVisual tOfArc, EnumArcDirection dir) {
-    Place p = (Place) modelElements.get(pOfArc);
-    Transition t = (Transition) modelElements.get(tOfArc);
-    if(((Net) model).hasArc(p, t, dir)) return null;
-    ArcCollection arc = ((Net) model).addDefaultArc(p ,t , dir);
-    return addVisualFor(arc);
-  }  
-
-  /**
-   * Tries to create an arc in this <code>ModelView</code>'s {@link Model} between the
-   * nodes stored in {@link ModelView#arcStart} and {@link ModelView#arcEnd}. The attempt will
-   * succeed, if one of the nodes is a place, and the other one is a transition, and the model
-   * does not yet contain an arc between the nodes.
-   * @return if an arc was successfully created in the <code>Model</code>, then the created arc
-   * is returned, otherwise <code>null</code>
-   * @see ModelView#tryToCreateArc(ape.ui.modelview.generic.PlaceVisual, ape.ui.modelview.generic.TransitionVisual, ape.petri.generic.EnumArcDirection) 
-   */
-  private Visual tryToCreateArcFromSelectedNodes() {
-    PlaceVisual pOfArc = null;
-    TransitionVisual tOfArc = null;
-    EnumArcDirection dir = null;
-    
-    if(arcStart instanceof PlaceVisual) {
-      dir = EnumArcDirection.PT;
-      pOfArc = (PlaceVisual) arcStart;
-    } else if(arcEnd instanceof PlaceVisual) {
-      dir = EnumArcDirection.TP;
-      pOfArc = (PlaceVisual) arcEnd;
-    }
-    
-    if(arcStart instanceof TransitionVisual) {
-      tOfArc = (TransitionVisual) arcStart;
-    } else if(arcEnd instanceof TransitionVisual) {
-      tOfArc = (TransitionVisual) arcEnd;
-    }
-    
-    if(pOfArc != null && tOfArc != null) {
-      return tryToCreateArc(pOfArc, tOfArc, dir);
-    }
-    return null;
   }
   
   /**
@@ -1442,137 +1410,60 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
     arcEnd = null;
   }
 
-  
-  /**
-   * This method should be invoked (usually by the {@link ModelViewCanvas})
-   * when the mouse was clicked on the {@link ModelViewCanvas}, displaying this <code>ModelView</code>.
-   * @param action the action that is now selected
-   * @param modifier a mask of active modifies 
-   */
-  public void mouseClick(EnumModelViewAction action, int modifier) {
-    switch(action) {
-      case Selection:
-        /*
-         * update selection, taking into account a 1 pixel square at the mouse location;
-         * - if CTRL is pressed: add elements in the area that were not in the selection before and remove
-         * elements that were there before
-         * - if SHIFT is pressed: add all elements in the area, even if they were there before
-         */
-        boolean xor = ((modifier & MouseEvent.CTRL_DOWN_MASK) != 0);
-        boolean add = ((modifier & MouseEvent.SHIFT_DOWN_MASK) != 0) | xor;
-        updateSingleSelection(add, xor);
-        break;
-    }
-  }
-  
-  /**
-   * This method should be invoked (usually by the {@link ModelViewCanvas})
-   * when the mouse was moved over the {@link ModelViewCanvas}, displaying this <code>ModelView</code>.
-   * @param action the action that is now selected
-   * @param dx the horizontal movement since the last event occurred
-   * @param dy the vertical movement since the last event occurred
-   */
-  public void mouseMoved(EnumModelViewAction action, int dx, int dy) {
-    switch(action) {
-      case Selection:
-        if(mouseDown) {
-          /* if the user is currently selecting an area */
-          if(selectionStartPoint != null) {
-            selectionEndPoint = mouseLocation.getLocation();
-            
-          /* otherwise */
-          } else {
-            translateSelectedVisuals(dx, dy);
-          }
-        }
-        break;
-    }
-  }
-  
-  /**
-   * This method should be invoked (usually by the {@link ModelViewCanvas})
-   * when the mouse was pressed on the {@link ModelViewCanvas}, displaying this <code>ModelView</code>.
-   * @param action the action that is now selected
-   * @param modifier a mask of active modifies 
-   */
-  public void mousePress(EnumModelViewAction action, int modifier) {
-    switch(action) {
-      case Selection:
-        Visual v = getUpmostVisualInFocus();
-        if(v == null || ! selectedVisuals.contains(v)) {
-          selectionStartPoint = mouseLocation.getLocation();
-          break;
-        }
-        break;
-      case NewPlace:
-        Place p = ((Net) model).addDefaultPlace();
-        Visual pv = addVisualFor(p);
-        ((PlaceVisual) pv).setCenter(mouseLocation);
-        setSelectionTo(pv);
-        break;
-      case NewTransition:
-        Transition t = ((Net) model).addDefaultTransition();
-        Visual tv = addVisualFor(t);
-        ((TransitionVisual) tv).setCenter(mouseLocation);
-        setSelectionTo(tv);
-        break;
-      case NewArc:
-        /* first set start point of arc if not yet set */
-        if(arcStart == null) {
-          if(upmostVisualInFocus instanceof NodeVisual) {
-            arcStart = (NodeVisual) upmostVisualInFocus;
-          }
-          return;
-          
-        /* second set the end point, if start point already is set */
-        } else {
-          if(upmostVisualInFocus instanceof NodeVisual) {
-            arcEnd = (NodeVisual) upmostVisualInFocus;
-          } else {
-            arcStart = null;
-          }
-        }
-        /* start and end point exists -> try to create an arc */
-        if(arcStart != null && arcEnd != null) {
-          Visual av = tryToCreateArcFromSelectedNodes();
-          if(av != null) {
-            repaint();
-            setSelectionTo(av);
-          }
-          arcStart = null;
-          arcEnd = null;
-        }
-        break;
-    }
-  }
-  
-  /**
-   * This method should be invoked (usually by the {@link ModelViewCanvas})
-   * when the mouse was released on the {@link ModelViewCanvas}, displaying this <code>ModelView</code>.
-   * @param action the action that is now selected
-   * @param modifier a mask of active modifies 
-   */
-  public void mouseRelease(EnumModelViewAction action, int modifier) {
-    switch(action) {
-      case Selection:
-        /* update selection:
-         * - if CTRL is pressed: add elements in the area that were not in the selection before and remove
-         * elements that were there before
-         * - if SHIFT is pressed: add all elements in the area, even if they were there before
-         */
-        if(selectionStartPoint != null) {
-          boolean xor = ((modifier & MouseEvent.CTRL_DOWN_MASK) != 0);
-          boolean add = ((modifier & MouseEvent.SHIFT_DOWN_MASK) != 0) | xor;
-          updateSelection(add, xor);
-          selectionStartPoint = null;
-          selectionEndPoint = null;
-          break;
-        }
-        notifyMovedVisuals();
-        break;
+  public void setSelectionStartPoint() {
+    Visual v = getUpmostVisualInFocus();
+    if(v == null || ! selectedVisuals.contains(v)) {
+      selectionStartPoint = mouseLocation.getLocation();
     }
   }
 
+  public void setSelectionEndPoint() {
+    selectionEndPoint = mouseLocation.getLocation();
+  }
+
+  public boolean selectionStartPointIsSet() {
+    return selectionStartPoint != null;
+  }
+  
+  public void removeSelectionPoints() {
+    selectionStartPoint = null;
+    selectionEndPoint = null;
+  }
+  
+  public void removeArcNodes() {
+    arcStart = null;
+    arcEnd = null;
+  }
+  
+  public void addArcNode() {
+    /* first set start point of arc if not yet set */
+    if(arcStart == null) {
+      if(upmostVisualInFocus instanceof NodeVisual) {
+        arcStart = (NodeVisual) upmostVisualInFocus;
+      }
+
+    /* second set the end point, if start point already is set */
+    } else {
+      if(upmostVisualInFocus instanceof NodeVisual) {
+        arcEnd = (NodeVisual) upmostVisualInFocus;
+      } else {
+        arcStart = null;
+      }
+    }
+  }
+  
+  public Node getArcStartNode() {
+    if(arcStart == null) return null;
+    return (Node) getModelElement(arcStart);
+  }
+  
+  public Node getArcEndNodeId() {
+    if(arcEnd == null) return null;
+    return (Node) getModelElement(arcEnd);
+  }
+
+  
+    
   @Override
   public String getAMLTagName() {
     return "ModelView";
@@ -1592,9 +1483,12 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
 
   @Override
   public void readAMLNode(AMLNode node) {
+    loadingInProgress = true;
+    Model model = modelStorage.getModel();
     for(AMLNode visualNode : node.getChildren("Visual")) {
-      ModelElement modelElement = model.getModelElementById(visualNode.getAttributeInt("modelElement"));
-      if(modelElement instanceof ArcCollection) continue;
+      int elementId = visualNode.getAttributeInt("id");
+      ModelElement modelElement = model.getModelElementById(elementId);
+      if(modelElement.getElementType() == EnumNetElementType.ArcCollection) continue;
       Visual visual = factory.createVisual(modelElement);
       int zOrder = visualNode.getAttributeInt("zOrder");
       visual.readAMLNode(visualNode);
@@ -1602,17 +1496,25 @@ public class ModelView implements PropertyContainer, Serializable, AMLWritable, 
     }
     
     for(AMLNode visualNode : node.getChildren("Visual")) {
-      ModelElement modelElement = model.getModelElementById(visualNode.getAttributeInt("modelElement"));
+      ModelElement modelElement = model.getModelElementById(visualNode.getAttributeInt("id"));
       if(! (modelElement instanceof ArcCollection)) continue;
       Visual visual = factory.createVisual(modelElement);
       int zOrder = visualNode.getAttributeInt("zOrder");
       visual.readAMLNode(visualNode);
       addVisual(modelElement, visual, zOrder);
     }
+    loadingInProgress = false;
   }
   
   @Override
   public void visualDataChanged(Visual v) {
     ui.visualElementHasChangedData(modelElements.get(v), v);
+    notifyStorageOnChanges();
+  }
+
+  private void notifyStorageOnChanges() {
+    if(! loadingInProgress) {
+      modelStorage.storageHasChanged();
+    }
   }
 }

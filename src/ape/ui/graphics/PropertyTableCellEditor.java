@@ -4,19 +4,17 @@
  */
 package ape.ui.graphics;
 
-import ape.ui.graphics.PropertyTableModel;
-import ape.ui.UI;
 import ape.ui.UI;
 import ape.util.Property;
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableCellEditor;
+import javax.swing.text.Caret;
 
 /**
  *
@@ -76,7 +74,7 @@ public class PropertyTableCellEditor extends AbstractCellEditor implements Table
     this.value = cellProperty.getValue();
     switch(cellProperty.getType()) {
       default:
-      case String:
+      case MultiLineText:
         editMode = EDIT_MODE_MULTI_LINE_TEXT;
         editFrame = new JDialog(ui.getMainFrame(),true);
         editFrame.addWindowListener(this);
@@ -109,6 +107,18 @@ public class PropertyTableCellEditor extends AbstractCellEditor implements Table
         editButton.addActionListener(this);
         return editButton;
         
+      case SingleLineText:
+        editField = new JTextField(this.value.toString());
+        editField.setHorizontalAlignment(JTextField.LEFT);
+        editField.addKeyListener(this);
+//        editField.setSelectionStart(0);
+//        editField.setSelectionEnd(editField.getText().length());
+        Caret caret = editField.getCaret();
+        caret.setDot(0);
+        caret.moveDot(editField.getText().length());
+        editMode = EDIT_MODE_SINGLE_LINE_TEXT;
+        return editField;
+        
       case Integer:
         editField = new JTextField(this.value.toString());
         editField.setHorizontalAlignment(JTextField.RIGHT);
@@ -132,6 +142,8 @@ public class PropertyTableCellEditor extends AbstractCellEditor implements Table
   public void fireEditButton() {
     if(editButton != null) {
       editButton.doClick();
+    } else if(editField != null) {
+      editField.requestFocusInWindow();
     }
   }
 

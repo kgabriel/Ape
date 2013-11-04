@@ -4,6 +4,7 @@
  */
 package ape.petri.ahl.instantiation;
 
+import ape.petri.generic.net.NetElementDataFactory;
 import ape.petri.generic.net.*;
 import ape.prolog.Atom;
 import ape.prolog.Compound;
@@ -15,12 +16,7 @@ import java.util.HashSet;
  *
  * @author Gabriel
  */
-public class AHLInstDataFactory extends DataFactory {
-  
-
-  public AHLInstDataFactory(Net net) {
-    super(net);
-  }
+public class AHLInstDataFactory extends NetElementDataFactory {
   
     /**
    * Creates a default place data for the net type of this factory.
@@ -49,5 +45,10 @@ public class AHLInstDataFactory extends DataFactory {
   @Override
   public ArcElementData createDefaultArcElementData() {
     return new AHLInstArcElementData("x");
+  }
+
+  @Override
+  public ArcCollectionData createDefaultArcCollectionData() {
+    return new AHLInstArcCollectionData();
   }
 }

@@ -6,7 +6,7 @@ package ape.ui.control.actions.global;
 
 import ape.Ape;
 import ape.org.ProjectStorage;
-import ape.ui.control.actions.GlobalAction;
+import ape.ui.control.actions.Action;
 import ape.util.IO;
 import java.util.List;
 
@@ -14,14 +14,14 @@ import java.util.List;
  *
  * @author Gabriel
  */
-public class LoadProjectAction extends GlobalAction {
+public class LoadProjectAction extends Action {
 
   public LoadProjectAction(Ape theApe) {
-    super(theApe);
+    super(theApe, "Load Project");
   }
 
   @Override
-  public void invoke() {
+  protected void onInvocation() {
     List<ProjectStorage> projects = IO.loadProjects(theApe.ui);
     if(projects.isEmpty()) return;
     theApe.projects.addStorages(projects);

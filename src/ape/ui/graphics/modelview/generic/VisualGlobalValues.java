@@ -39,8 +39,8 @@ public final class VisualGlobalValues {
   public static Color transitionExtendedDataForegroundColor = new Color(20,70,20);
   
   public static Color modelBackgroundColor = new Color(255,255,252);
-  public static Color modelSelectionColor = new Color(230,240,250,120);
-  public static Color modelHoverColor = new Color(240,250,240,200);
+  public static Color modelSelectionColor = new Color(170,210,255,150);
+  public static Color modelHoverColor = new Color(190,255,190,150);
   public static Color modelSelectionBorderColor = new Color(170,200,240,230);
 
   public static Color modelGridColor = new Color(235,240,245);

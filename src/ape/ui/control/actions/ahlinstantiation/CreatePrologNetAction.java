@@ -7,21 +7,21 @@ package ape.ui.control.actions.ahlinstantiation;
 import ape.Ape;
 import ape.petri.ahl.instantiation.AHLInstantiation;
 import ape.prolog.exception.PrologNetException;
-import ape.ui.control.actions.GlobalModelAction;
+import ape.ui.control.actions.ModelAction;
 import javax.swing.JOptionPane;
 
 /**
  *
  * @author Gabriel
  */
-public class CreatePrologNetAction extends GlobalModelAction {
+public class CreatePrologNetAction extends ModelAction {
 
   public CreatePrologNetAction(Ape theApe) {
-    super(theApe);
+    super(theApe, "Create Prolog Net");
   }
 
   @Override
-  public void invoke() {
+  protected void onInvocation() {
     AHLInstantiation inst = (AHLInstantiation) getModel();
     try{
       inst.createPrologNet();

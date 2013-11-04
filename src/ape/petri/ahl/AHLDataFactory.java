@@ -4,18 +4,15 @@
  */
 package ape.petri.ahl;
 
+import ape.petri.generic.net.NetElementDataFactory;
 import ape.petri.generic.net.*;
 
 /**
  *
  * @author Gabriel
  */
-public class AHLDataFactory extends DataFactory {
+public class AHLDataFactory extends NetElementDataFactory {
 
-  public AHLDataFactory(Net net) {
-    super(net);
-  }
-  
     /**
    * Creates a default place data for the net type of this factory.
    * @return a new data for a place, containing a name <i>"Place i"</i>, where <i>i</i> is a number incrementing
@@ -43,6 +40,11 @@ public class AHLDataFactory extends DataFactory {
   @Override
   public ArcElementData createDefaultArcElementData() {
     return new AHLArcElementData("x");
+  }
+
+  @Override
+  public ArcCollectionData createDefaultArcCollectionData() {
+    return new AHLArcCollectionData();
   }
 
 }

@@ -79,7 +79,6 @@ public class PrologNet {
     Term[] listElements = new Term[transitions.size()];
     int i = 0;
     for(Transition t : transitions) {
-      AHLInstTransitionData data = (AHLInstTransitionData) t.getData();
       listElements[i++] = transitionTerm(t);
     }
     if(shuffle) Collections.shuffle(Arrays.asList(listElements));
@@ -156,7 +155,7 @@ public class PrologNet {
     ArrayList<Term> listElements = new ArrayList<>();
     for(Place p : net.getPlaces()) {
       AHLInstPlaceData data = (AHLInstPlaceData) p.getData();
-      ValueTerm value = data.getValue();
+      ValueTerm value = data.getPlaceValue();
       if(value == null) continue;
       Term valueTerm = pair(placeTerm(p), value.jplTerm());
       listElements.add(valueTerm);
@@ -243,7 +242,7 @@ public class PrologNet {
       for(Place p : net.getPlaces()) {
         if(p.getId() == placeId) {
           AHLInstPlaceData data = (AHLInstPlaceData) p.getData();
-          data.setValue(places.get(placeId));
+          data.setPlaceValue(places.get(placeId));
         }
       }
     }

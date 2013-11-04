@@ -4,38 +4,46 @@
  */
 package ape.petri.generic.net;
 
+import ape.petri.generic.DataChangeListener;
 import ape.petri.generic.EnumNetType;
+import ape.petri.generic.ModelElement;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
+import ape.util.PropertyConstant;
+import ape.util.PropertyContainer;
 import ape.util.aml.AMLNode;
 import ape.util.aml.AMLWritable;
-import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  *
  * @author Gabriel
  */
-public abstract class Data implements Serializable, AMLWritable {
-  private EnumElementType elementType;
-  private EnumNetType netType;
+public abstract class Data implements AMLWritable, PropertyContainer {
   private Collection<DataChangeListener> dataChangeListeners;
+  private ModelElement modelElement;
   
-  public Data(EnumNetType netType, EnumElementType elementType) {
-    this.netType = netType;
-    this.elementType = elementType;
+  public Data() {
     dataChangeListeners = new HashSet<>();
+  }
+  
+  protected ModelElement getModelElement() {
+    return modelElement;
+  }
+  
+  protected void setModelElement(ModelElement modelElement) {
+    this.modelElement = modelElement;
   }
 
   public EnumNetType getNetType() {
-    return netType;
+    return modelElement.getNetType();
   }
   
-  protected void setNetType(EnumNetType netType) {
-    this.netType = netType;
-  }
-
-  public EnumElementType getElementType() {
-    return elementType;
+  public EnumNetElementType getElementType() {
+    return modelElement.getElementType();
   }
   
   public void addDataChangeListener(DataChangeListener listener) {
@@ -53,10 +61,17 @@ public abstract class Data implements Serializable, AMLWritable {
   }
 
   @Override
+  public List<Property> getProperties() {
+    List<Property> properties = new ArrayList<>();
+    properties.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.Integer, "Element ID", getModelElement().getId()));
+    return properties;
+  }
+  
+  
+
+  @Override
   public AMLNode getAMLNode() {
     AMLNode node = new AMLNode(getAMLTagName());
-    node.putAttribute("netType", netType.name());
-    node.putAttribute("elementType", elementType.name());
     return node;
   }
 
@@ -67,9 +82,5 @@ public abstract class Data implements Serializable, AMLWritable {
 
   @Override
   public void readAMLNode(AMLNode node) {
-    netType = EnumNetType.valueOf(node.getAttribute("netType"));
-    elementType = EnumElementType.valueOf(node.getAttribute("elementType"));
   }
-  
-  
 }

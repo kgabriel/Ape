@@ -5,45 +5,44 @@
 package ape.ui.control.commands;
 
 import ape.Ape;
-import ape.ui.graphics.PropertyTable;
 import ape.ui.control.CommandEvent;
 import ape.ui.control.EnumCommandReceiverType;
 import ape.ui.control.EnumInvocationType;
+import ape.ui.graphics.modelview.ModelView;
+import java.awt.event.MouseWheelEvent;
 
 /**
  *
  * @author Gabriel
  */
-public class CommandSetProperty implements Command {
-  
-  String propertyName;
-  
-  public CommandSetProperty(String propertyName) {
-    this.propertyName = propertyName;
-  }
+public class ModelViewScaleCommand implements Command {
 
   @Override
   public String getName() {
-    return "Set '" + propertyName + "' Property";
+    return "Scale Model View";
   }
 
   @Override
   public String getDescription() {
-    return "Set the property with the key '" + propertyName + "'.";
+    return "Changes the scale of the current model view using the mouse wheel.";
   }
 
   @Override
   public void invoke(CommandEvent e, Ape ape) {
-    PropertyTable propertyTable = ape.ui.getPropertyTable();
-    int propertyRow = propertyTable.getPropertyRow(propertyName);
-    if(propertyRow == -1) return;
-    propertyTable.editPropertyAt(propertyRow);
-  }
+    ModelView modelView = ape.ui.getActiveModelView();
+    if(modelView == null) return;
+    
+    MouseWheelEvent m = (MouseWheelEvent) e.getInputEvent();
+    double amount = m.getPreciseWheelRotation();
+    double scaleChange = 1.0 - (amount / 10.0);
+    modelView.scaleViewFromDevice(scaleChange, m.getPoint());
+    modelView.repaint();
+}
 
   @Override
   public boolean invokedBy(EnumInvocationType invocationType) {
     switch(invocationType) {
-      case KeyPress:
+      case MouseWheel:
         return true;
       default:
         return false;
@@ -52,11 +51,16 @@ public class CommandSetProperty implements Command {
 
   @Override
   public boolean receivedBy(EnumCommandReceiverType receiverType) {
-    return receiverType == EnumCommandReceiverType.Global;
+    return receiverType == EnumCommandReceiverType.ModelView;
   }
 
   @Override
   public boolean isAlwaysActive() {
-    return true;
+    return false;
+  }
+
+  @Override
+  public boolean canUserDefineInvocationBinding() {
+    return false;
   }
 }

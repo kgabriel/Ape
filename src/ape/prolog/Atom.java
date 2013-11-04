@@ -4,13 +4,11 @@
  */
 package ape.prolog;
 
-import java.io.Serializable;
-
 /**
  *
  * @author Gabriel
  */
-public class Atom implements Serializable {
+public class Atom {
 
   private String name;
   public static final Atom unknown_type = new Atom("type_unknown");

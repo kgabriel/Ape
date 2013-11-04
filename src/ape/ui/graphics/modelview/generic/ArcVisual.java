@@ -4,31 +4,28 @@
  */
 package ape.ui.graphics.modelview.generic;
 
-import ape.util.EnumPropertyType;
-import ape.util.Property;
-import ape.util.PropertyConstant;
-import ape.petri.generic.net.DataChangeListener;
-import ape.petri.generic.net.EnumArcDirection;
-import ape.petri.generic.net.ArcCollection;
-import ape.petri.generic.net.Data;
 import ape.math.Ray2D;
 import ape.math.Vector2D;
-import ape.petri.generic.*;
+import ape.petri.generic.DataChangeListener;
+import ape.petri.generic.net.ArcCollection;
+import ape.petri.generic.net.ArcCollectionData;
+import ape.petri.generic.net.Data;
+import ape.petri.generic.net.EnumArcDirection;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import ape.util.aml.AMLNode;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.List;
 import java.util.TreeMap;
 
 /**
- * An <code>ArcVisual</code> is the graphical representation of an {@link Arc}, more precisely
- * an {@link ArcCollection}. It is represented as an arrow between a place and a transition
+ * An <code>ArcVisual</code> is the graphical representation of an {@link ape.petri.generic.net.Arc}, more precisely
+ * an {@link ape.petri.generic.net.ArcCollection}. It is represented as an arrow between a place and a transition
  * with one of the two possible directions. The arrow can be bended at bending points,
  * that are visualized by {@link BendingPointVisual}s.
  * <br />
@@ -46,16 +43,16 @@ import java.util.TreeMap;
  * @see BendingPointVisual
  * @author Gabriel
  */
-public abstract class ArcVisual extends Visual implements DataChangeListener {
+public abstract class ArcVisual extends ModelElementVisual implements DataChangeListener {
 
   /**
-   * The {@link PlaceVisual} representing the {@link Place} of the {@link Arc} that
+   * The {@link PlaceVisual} representing the <code>Place</code> of the <code>Arc</code> that
    * is represented by this <code>ArcVisual</code>.
    */
   private PlaceVisual placeVisual;
 
   /**
-   * The {@link TransitionVisual} representing the {@link Transition} of the {@link Arc} that
+   * The {@link TransitionVisual} representing the <code>Transition</code> of the <code>Arc</code> that
    * is represented by this <code>ArcVisual</code>.
    */
   private TransitionVisual transitionVisual;
@@ -64,11 +61,6 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
    * The direction of the arc.
    */
   private EnumArcDirection direction;
-  
-  /**
-   * The data of the arc.
-   */
-  protected ArcCollection arc;
   
   /**
    * The label that displays the data of the arc.
@@ -86,21 +78,28 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
   private TreeMap<Integer,BendingPointVisual> bendingPoints;
   
   /**
+   * The vectors of all points along the line that forms this arc. 
+   */
+  private Vector2D[] lineVectors;
+  
+  /**
+   * The shape of this arc containing the line and all bending points.
+   */
+  private Shape shape;
+  
+  /**
    * Constructor for new <code>ArcVisual</code> connecting the specified {@link NodeVisual}s
    * in the specified direction, and having the specified data collection.
    * @param superGraphics the superior graphics object
    * @param pv the <code>Visual</code> for the place of the arc
    * @param tv the <code>Visual</code> for the transition of the arc
    * @param dir the direction of the arc
-   * @param data the data of the arc
    */
   public ArcVisual(Graphics2D superGraphics, PlaceVisual pv, TransitionVisual tv, EnumArcDirection dir,
-          ArcCollection arc) {
-    super(superGraphics);
+          ArcCollectionData data, int modelElementId) {
+    super(superGraphics, data, modelElementId);
     initConnection(pv, tv);
     this.direction = dir;
-    this.bendingPoints = new TreeMap<>();
-    addBendingPoint(0, false, new BendingPointVisual(superGraphics, this));
     setResizable(false, false);
     setMovable(false);
     setSelectable(false);
@@ -109,9 +108,9 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     label.setTextColor(VisualGlobalValues.arcLabelTextColor);
     label.setBackgroundColor(VisualGlobalValues.arcLabelBackgroundColor);
     labelPosition = 0.7;
+    this.bendingPoints = new TreeMap<>();
+    addBendingPoint(0, false, new BendingPointVisual(superGraphics, this));
     updateLocation();
-    setArc(arc);
-    initProperties();
   }
   
   /**
@@ -126,35 +125,10 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     transitionVisual.addConnectedArc(this);
   }
 
-  private void initProperties() {
-    /* arc direction: pre or post arc */
-    String dir = (direction == EnumArcDirection.PT ? "Pre Arc" : "Post Arc");
-    addProperty(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Arc Type", dir));
-    
-    /* place of the arc */
-    addProperty(new Property(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Place", false) {
-      @Override
-      public Object getValue() {
-        return placeVisual.getDataName();
-      }
-
-      @Override
-      public void setValue(Object value) {}
-    });
-    
-    /* transition of the arc */
-   addProperty(new Property(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Transition", false) {
-      @Override
-      public Object getValue() {
-        return transitionVisual.getDataName();
-      }
-
-      @Override
-      public void setValue(Object value) {}
-    });
-   
-   /* position of the label */
-   addProperty(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Interval, "Label Position", true) {
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+    properties.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Interval, "Label Position") {
       @Override
       public Object getValue() {
         return labelPosition;
@@ -163,8 +137,10 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
       @Override
       public void setValue(Object value) {
         labelPosition = (double) value;
+        updateLocation();
       }
     });
+    return properties;
   }
   
   /**
@@ -203,6 +179,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     
     /* add the new point as a selectable child */
     addChild(b,true);
+    calculateLineVectorsAndSetLabelPosition();
   }
   
   /**
@@ -213,6 +190,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     if(key == null) return;
     BendingPointVisual v = bendingPoints.remove(key);
     removeChild(v);
+    calculateLineVectorsAndSetLabelPosition();
   }
   
   /**
@@ -223,6 +201,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     if(key == null) return;
     BendingPointVisual v = bendingPoints.get(key);
     if(v.isServant()) removeBendingPoint(key);
+    calculateLineVectorsAndSetLabelPosition();
   }
     
   /**
@@ -262,6 +241,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     }
     removeBendingPoint(key);
     addBendingPoint(key, true, new BendingPointVisual(superGraphics, this));
+    calculateLineVectorsAndSetLabelPosition();
     return true;
   }
   
@@ -320,24 +300,6 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
   }
   
   /**
-   * Sets the data of the arc. Invokes an update of the label's content.
-   * @param data the data of the {@link ArcCollection} corresponding to the <code>ArcVisual</code>
-   */
-  private void setArc(ArcCollection arc) {
-    this.arc = arc;
-    arc.getData().addDataChangeListener(this);
-    updateLabelContent();
-  }
-
-  /**
-   * Returns the {@link ArcCollection} that corresponds to this <code>ArcVisual</code>
-   * @return the data
-   */
-  protected ArcCollection getArc() {
-    return arc;
-  }
-
-  /**
    * Returns the label of this <code>ArcVisual</code>.
    * @return the label
    */
@@ -361,8 +323,56 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
     int x2 = (int) Math.max(placeVisual.getCenterX(), transitionVisual.getCenterX());
     int y2 = (int) Math.max(placeVisual.getCenterY(), transitionVisual.getCenterY());
     setBounds(x1,y1,x2-x1,y2-y1);
+    calculateLineVectorsAndSetLabelPosition();
   }
   
+  /**
+   * Calculates the line that connects the place with the transition and that visits all
+   * bending points in their order in the tree map. Also, the length of each line segment
+   * is calculated, and based on that calculation, the label is repositioned on the line
+   * according to its relative position.
+   */
+  private void calculateLineVectorsAndSetLabelPosition() {
+    
+    lineVectors = new Vector2D[bendingPoints.size()+2];
+    double[] lineLength = new double[bendingPoints.size()+1];
+
+    Vector2D placeVec = getPlaceIntersection();
+    Vector2D previousVec = placeVec;
+
+    double lineLengthSum = 0.0;
+    int i = 0;
+    lineVectors[i++] = placeVec;
+    for(BendingPointVisual bendingPoint : bendingPoints.values()) {
+      Vector2D nextVec = bendingPoint.getCenterVector();
+      lineVectors[i] = nextVec;
+      lineLength[i-1] += previousVec.distance(nextVec);
+      lineLengthSum += lineLength[i-1];
+      i++;
+      
+      previousVec = nextVec;
+    }
+    Vector2D transitionVec = getTransitionIntersection();
+    
+    lineVectors[i] = transitionVec;
+    lineLength[i-1] += previousVec.distance(transitionVec);
+    lineLengthSum += lineLength[i-1];
+    
+    double absoluteLabelPosition = lineLengthSum * labelPosition;
+    lineLengthSum = 0.0;
+    for(i=0;i<lineLength.length;i++) {
+      if(lineLengthSum + lineLength[i] >= absoluteLabelPosition) {
+        double relativeLabelPosition = absoluteLabelPosition - lineLengthSum;
+        Ray2D currentLine = Ray2D.fromPoints(lineVectors[i], lineVectors[i+1]);
+        label.setCenter(currentLine.getTargetVector(relativeLabelPosition).toPoint());
+        break;
+      }
+      lineLengthSum += lineLength[i];
+    }
+    
+    updateShape();
+  }
+
   /**
    * Returns the intersection of the arc with the place.
    * @return the intersection of the circle of the place with the line that connects the
@@ -405,69 +415,20 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
    */
   @Override
   public void draw(int status) {
-    Vector2D[] line = new Vector2D[bendingPoints.size()+2];
-    calculateLineVectorsAndSetLabelPosition(line);
-    for(int i=0; i<line.length-1;i++) {
-      superGraphics.drawLine((int) line[i].x, (int) line[i].y, (int) line[i+1].x, (int) line[i+1].y);
+    superGraphics.setColor(VisualGlobalValues.arcColor);
+    for(int i=0; i<lineVectors.length-1;i++) {
+      superGraphics.drawLine((int) lineVectors[i].x, (int) lineVectors[i].y, (int) lineVectors[i+1].x, (int) lineVectors[i+1].y);
     }
 
     if(direction == EnumArcDirection.PT) {
-      drawArcHead(superGraphics, Ray2D.fromPoints(line[line.length-1], line[line.length-2]));
+      drawArcHead(superGraphics, Ray2D.fromPoints(lineVectors[lineVectors.length-1], lineVectors[lineVectors.length-2]));
     } else {
-      drawArcHead(superGraphics, Ray2D.fromPoints(line[0],line[1]));
+      drawArcHead(superGraphics, Ray2D.fromPoints(lineVectors[0],lineVectors[1]));
     }
 
     label.redraw(status);
   }
   
-  /**
-   * Calculates the line that connects the place with the transition and that visits all
-   * bending points in their order in the tree map. Also, the length of each line segment
-   * is calculated, and based on that calculation, the label is repositioned on the line
-   * according to its relative position.
-   * @param line an array of vectors that has a suitable size (number of bending points
-   * + 2 for place and transition), that is filled with the positions of the single points
-   * of the line
-   */
-  private void calculateLineVectorsAndSetLabelPosition(Vector2D[] line) {
-    superGraphics.setColor(VisualGlobalValues.arcColor);
-    
-    double[] lineLength = new double[bendingPoints.size()+1];
-
-    Vector2D placeVec = getPlaceIntersection();
-    Vector2D previousVec = placeVec;
-
-    double lineLengthSum = 0.0;
-    int i = 0;
-    line[i++] = placeVec;
-    for(BendingPointVisual bendingPoint : bendingPoints.values()) {
-      Vector2D nextVec = bendingPoint.getCenterVector();
-      line[i] = nextVec;
-      lineLength[i-1] += previousVec.distance(nextVec);
-      lineLengthSum += lineLength[i-1];
-      i++;
-      
-      previousVec = nextVec;
-    }
-    Vector2D transitionVec = getTransitionIntersection();
-    
-    line[i] = transitionVec;
-    lineLength[i-1] += previousVec.distance(transitionVec);
-    lineLengthSum += lineLength[i-1];
-    
-    double absoluteLabelPosition = lineLengthSum * labelPosition;
-    lineLengthSum = 0.0;
-    for(i=0;i<lineLength.length;i++) {
-      if(lineLengthSum + lineLength[i] >= absoluteLabelPosition) {
-        double relativeLabelPosition = absoluteLabelPosition - lineLengthSum;
-        Ray2D currentLine = Ray2D.fromPoints(line[i], line[i+1]);
-        label.setCenter(currentLine.getTargetVector(relativeLabelPosition).toPoint());
-        return;
-      }
-      lineLengthSum += lineLength[i];
-    }
-  }
-
   /**
    * Draws an arrow head at the starting point of the specified ray. The ray should point
    * in the opposite direction the resulting arrow head will point at.
@@ -515,21 +476,25 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
   }
 
   @Override
-  protected void updateOnResize() {
+  public void updateOnResize() {
+    updateBounds();
   }
 
   @Override
-  protected void updateOnMove() {
+  public void updateOnMove() {
+    updateLocation();
   }
 
   @Override
-  protected void updateOnUserMove() {}
+  public void updateOnUserMove() {
+    updateLocation();
+  }
 
   @Override
-  protected void updateOnUserMoveFinished() {}
-  
-  @Override
-  protected void updateOnUserResize() {}
+  public void updateOnUserMoveFinished() {
+    super.updateOnUserMoveFinished();
+    updateLocation();
+  }
   
   /**
    * Invokes an update of the label's content when the data has changed.
@@ -538,6 +503,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
   @Override
   public void dataChanged(Data changedData) {
     updateLabelContent();
+    updateLocation();
     dataHasChanged();
   }
   
@@ -595,6 +561,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
    */
   protected void bendingPointChangedLocation(BendingPointVisual changedPoint) {
     moveBendingPointServantNeighbors(changedPoint.getKey());
+    calculateLineVectorsAndSetLabelPosition();
   }
   
   
@@ -604,6 +571,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
    */
   protected void placeChangedLocation() {
     moveServantBendingPoint(bendingPoints.firstKey());
+    calculateLineVectorsAndSetLabelPosition();
   }
   
   /**
@@ -612,6 +580,34 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
    */
   protected void transitionChangedLocation() {
     moveServantBendingPoint(bendingPoints.lastKey());
+    calculateLineVectorsAndSetLabelPosition();
+  }
+  
+  private void updateShape() {
+    GeneralPath path = new GeneralPath();
+    double lineWidth = 5.0;
+    for(Visual v : bendingPoints.values()) {
+      path.append(v.getShape(), true);
+    }
+    
+    for(int i=0;i<lineVectors.length-1;i++) {
+      Ray2D lineRay = Ray2D.fromPoints(lineVectors[i], lineVectors[i+1]);
+      Vector2D orthoVec = lineRay.getRotated(Math.PI / 2.0).getNormalDirectionVector().multiply(lineWidth);
+      Vector2D v1 = new Vector2D(lineVectors[i]);
+      v1.subtract(orthoVec);
+      Vector2D v2 = new Vector2D(lineVectors[i+1]);
+      v2.subtract(orthoVec);
+      Vector2D v3 = new Vector2D(lineVectors[i+1]);
+      v3.add(orthoVec);
+      Vector2D v4 = new Vector2D(lineVectors[i]);
+      v4.add(orthoVec);
+      path.moveTo(v1.x, v1.y);
+      path.lineTo(v2.x, v2.y);
+      path.lineTo(v3.x, v3.y);
+      path.lineTo(v4.x, v4.y);
+      path.closePath();
+    }
+    this.shape = path;
   }
   
   /**
@@ -621,11 +617,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
    */
   @Override
   public Shape getShape() {
-    GeneralPath path = new GeneralPath();
-    for(Visual v : bendingPoints.values()) {
-      path.append(v.getShape(), true);
-    }
-    return path;
+    return this.shape;
   }
 
   /**
@@ -633,7 +625,7 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
    * itself from the {@link PlaceVisual} and {@link TransitionVisual} it was connected to.
    */
   @Override
-  protected void destroy() {
+  public void destroy() {
     super.destroy();
     placeVisual.removeConnectedArc(this);
     transitionVisual.removeConnectedArc(this);
@@ -671,5 +663,6 @@ public abstract class ArcVisual extends Visual implements DataChangeListener {
       bendingPoints.put(key,bendingPoint);
       addChild(bendingPoint, true);
     }
+    updateLocation();
   }
 }

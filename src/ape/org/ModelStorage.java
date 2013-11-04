@@ -7,49 +7,52 @@ package ape.org;
 import ape.petri.generic.EnumModelType;
 import ape.petri.generic.EnumNetType;
 import ape.petri.generic.Model;
-import ape.ui.graphics.modelview.generic.ModelView;
-import ape.util.EnumPropertyType;
-import ape.util.Property;
-import ape.util.PropertyConstant;
+import ape.petri.generic.ModelElement;
+import ape.ui.UI;
+import ape.ui.graphics.modelview.ModelView;
+import ape.util.*;
 import ape.util.aml.AMLNode;
-import ape.util.aml.AMLWritable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
  * @author Gabriel
  */
 public class ModelStorage extends Storage {
-  private EnumModelType type;
+  private EnumModelType modelType;
   private Model model;
   private ModelView view; 
 
-  public ModelStorage(EnumModelType type, Model model, ModelView view) {
-    super(type.getName());
-    this.type = type;
+  public ModelStorage(Model model, UI ui) {
     this.model = model;
-    this.view = view;
+    if(model != null) {
+      this.view = new ModelView(ui, this);
+      this.modelType = model.getModelType();      
+      setNewName(modelType.getName());
+    }
   }
 
-  public EnumModelType getType() {
-    return type;
+  public EnumModelType getModelType() {
+    return modelType;
+  }
+  
+  public EnumNetType getNetType() {
+    return model.getNetType();
   }
   
   public Model getModel() {
     return model;
   }
-
+  
   public ModelView getView() {
     return view;
   }
-
+  
   @Override
   public List<Property> getProperties() {
     List<Property> properties = view.getProperties();
-    properties.add(0, new Property(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Name", true) {
+    properties.add(0, new Property(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.SingleLineText, "Name") {
       @Override
       public Object getValue() {
         return getName();
@@ -60,10 +63,20 @@ public class ModelStorage extends Storage {
         setName((String) value);
       }
     });
-    properties.add(0, new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Entity Type", "Model"));
+    properties.add(0, new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.SingleLineText, "Entity Type", "Model"));
     return properties;
   }
 
+  public PropertyContainer getModelElementPropertyContainer(int modelElementId) {
+    List<Property> properties = new ArrayList<>();
+    ModelElement modelElement = model.getModelElementById(modelElementId);
+    if(modelElement != null) {
+      properties.addAll(modelElement.getData().getProperties());
+      properties.addAll(view.getVisual(modelElement).getProperties());
+    }
+    return new AbstractPropertyContainer(properties);
+  }  
+  
   @Override
   public String getAMLTagName() {
     return "ModelStorage";
@@ -72,24 +85,21 @@ public class ModelStorage extends Storage {
   @Override
   public AMLNode getAMLNode() {
     AMLNode node = super.getAMLNode();
-    node.putAttribute("type", type.name());
+    node.putAttribute("modelType", modelType.name());
     node.addChild(model.getAMLNode());
     node.addChild(view.getAMLNode());
     return node;
   }
 
-  
-
   @Override
   public void readAMLNode(AMLNode node) {
     super.readAMLNode(node);
-    this.type = EnumModelType.valueOf(node.getAttribute("type"));
+    this.modelType = EnumModelType.valueOf(node.getAttribute("modelType"));
     AMLNode modelNode = node.getFirstChild("Model");
-    model = type.createModel(EnumNetType.valueOf(modelNode.getAttribute("netType")));
+    model = modelType.createModel(EnumNetType.valueOf(modelNode.getAttribute("netType")));
     model.readAMLNode(modelNode); 
     AMLNode modelViewNode = node.getFirstChild("modelView");
-    view = new ModelView(null, model, false);
+    view = new ModelView(null, this);
     view.readAMLNode(modelViewNode);
   }
-  
 }

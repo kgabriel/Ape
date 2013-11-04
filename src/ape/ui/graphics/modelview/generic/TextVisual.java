@@ -45,7 +45,7 @@ public class TextVisual extends Visual {
    * on this <code>Visual</code>'s graphics, vertically separated by a distance of
    * {@link VisualGlobalValues#textLineSep}.
    */
-  protected transient List<TextLayout> lines;
+  protected List<TextLayout> lines;
   
   /** A boolean value whether this text visual is compact or not. Compact visuals
    * always adapt their size (horizontally and vertically) to the size the contained
@@ -256,7 +256,7 @@ public class TextVisual extends Visual {
    * is wrapped, and the size of the component is adapted, according to this component's compactness.
    */
   @Override
-  protected void updateOnResize() {
+  public void updateOnResize() {
     updateContent();
   }
 
@@ -265,7 +265,7 @@ public class TextVisual extends Visual {
    * It does nothing.
    */
   @Override
-  protected void updateOnMove() {}
+  public void updateOnMove() {}
   
 
   /**
@@ -432,21 +432,12 @@ public class TextVisual extends Visual {
   }
 
   @Override
-  protected void updateOnUserMove() {}
-
-  @Override
-  protected void updateOnUserMoveFinished() {}
-
-  @Override
-  protected void updateOnUserResize() {}
+  public void updateOnUserMove() {}
 
   @Override
   public Shape getShape() {
     return getBounds();
   }
-
-  @Override
-  protected void destroy() {}
 
   @Override
   public String getElementTypeName() {

@@ -10,7 +10,8 @@ package ape.util;
  */
 public enum EnumPropertyType {
 
-  String,
+  SingleLineText,
+  MultiLineText,
   Integer,
   Interval;
 

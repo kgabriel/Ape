@@ -20,7 +20,6 @@ public class PrologParserException extends RuntimeException {
 
   /**
    * Creates a new Prolog parser exception with the specific message.
-   * @param msg a message that should describe the cause of the exception
    */
   public PrologParserException(String str, int pos, String reason) {
     super(message(str,pos,reason));

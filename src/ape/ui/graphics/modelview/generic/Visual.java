@@ -12,7 +12,6 @@ import ape.util.PropertyContainer;
 import ape.util.aml.AMLNode;
 import ape.util.aml.AMLWritable;
 import java.awt.*;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,7 +24,7 @@ import java.util.HashSet;
  * is aware of all of these operations.
  * @author Gabriel
  */
-public abstract class Visual implements PropertyContainer, Serializable, AMLWritable {
+public abstract class Visual implements PropertyContainer, AMLWritable {
   
   public final static int STATUS_NORMAL = 0;
   public final static int STATUS_HOVER = 1;
@@ -41,7 +40,7 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
    * like for example the label orbiting a {@link PlaceVisual} or the text elements in a
    * {@link TransitionVisual}.
    */
-  protected transient Graphics2D superGraphics;
+  protected Graphics2D superGraphics;
   
   /**
    * The graphics of this element. It is used in the {@link Visual#draw(int)} method
@@ -50,7 +49,7 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
    * portion of the {@link Visual#superGraphics} that corresponds to the <code>Visual</code>'s
    * bounds. 
    */
-  protected transient Graphics2D graphics;
+  protected Graphics2D graphics;
   
   /** A boolean value, whether the visual component is horizontally resizable by user input.
    * It does not in any way affect the behavior of the usual resizing methods of this class.
@@ -96,8 +95,6 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
   private Collection<Visual> selectableChildVisuals;
   
   
-  private java.util.List<Property> properties;
-  
   protected Collection<VisualListener> visualListeners;
   
   /**
@@ -126,14 +123,12 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
     this.bounds = bounds;
     this.childVisuals = new HashSet<>();
     this.selectableChildVisuals = new HashSet<>();
-    this.properties = new ArrayList<>();
     setSuperGraphics(superGraphics);
     this.resizableX = true;
     this.resizableY = true;
     this.movable = true;
     this.selectable = true;
     this.hidden = false;
-    initProperties();
   }
   
   public boolean addVisualListener(VisualListener listener) {
@@ -150,7 +145,7 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
     }
   }
   
-  protected final void setSuperGraphics(Graphics2D superGraphics) {
+  public final void setSuperGraphics(Graphics2D superGraphics) {
     this.superGraphics = superGraphics;
     clipToBounds();
     for(Visual child : childVisuals) {
@@ -176,33 +171,15 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
     return ! selectableChildVisuals.isEmpty();
   }
   
-  protected Collection<Visual> getSelectableChildren() {
+  public Collection<Visual> getSelectableChildren() {
     return new HashSet<>(selectableChildVisuals);
   }
-  
-  protected void addProperty(Property prop) {
-    properties.add(prop);
-  }
-  
-  protected void addPropertyInFront(Property prop) {
-    properties.add(0, prop);
-  }
-  
-  protected void removeProperty(String key) {
-    Property oldProp = null;
-    for(Property p : properties) {
-      if(p.getKey().equals(key)) oldProp = p;
-    }
-    if(oldProp != null) properties.remove(oldProp);
-  }
-  
+    
   @Override
   public java.util.List<Property> getProperties() {
+    java.util.List<Property> properties = new ArrayList<>();
+    properties.add(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.SingleLineText, "Element Type", getElementTypeName()));
     return properties;
-  }
-  
-  private void initProperties() {
-    addProperty(new PropertyConstant(Property.CATEGORY_PROPERTIES, this, EnumPropertyType.String, "Element Type", getElementTypeName()));
   }
   
   public void redraw(int status) {
@@ -220,14 +197,14 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
    * on every call of a method that is capable of resizing the component, but only if the
    * size of the component has actually changed.
    */
-  protected abstract void updateOnResize();
+  public abstract void updateOnResize();
   
   /**
    * This method is always called on moving the component. Note that this does not happen
    * on every call of a method that is capable of moving the component, but only if the
    * location of the component has actually changed.
    */
-  protected abstract void updateOnMove();
+  public abstract void updateOnMove();
   
   /**
    * This method is always called on resizing the component by the user. This method is always called 
@@ -235,7 +212,9 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
    * {@link Visual#setSizeIfPossible(int, int)} was called. Note that these methods
    * also invoke {@link Visual#updateOnResize()} if the size of this visual actually changed.
    */
-  protected abstract void updateOnUserResize();
+  public void updateOnUserResize() {
+    dataHasChanged();
+  }
   
   /**
    * This method is always called on moving the component by the user. This method is always called 
@@ -243,20 +222,21 @@ public abstract class Visual implements PropertyContainer, Serializable, AMLWrit
    * {@link Visual#setLocationIfPossible(int, int)} was called. Note that these methods
    * also invoke {@link Visual#updateOnMove()} if the location of this visual actually changed.
    */
-  protected abstract void updateOnUserMove();
+  public abstract void updateOnUserMove();
   
   /**
    * This method is always called when a user action moving this component by the user has ended.
-   * The caller of this method is the corresponding {@link ModelView}.
    */
-  protected abstract void updateOnUserMoveFinished();
+  public void updateOnUserMoveFinished() {
+    dataHasChanged();
+  }
   
   /**
    * This method should always be called, when this visual is completely removed. Subclasses
    * of visuals can override this method to clean up before destruction. The implementation
    * in this class disposes the graphics object of the visual.
    */
-  protected void destroy() {
+  public void destroy() {
     graphics.dispose();
   }
 

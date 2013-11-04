@@ -2,7 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package ape.petri.generic.net;
+package ape.petri.generic;
+
+import ape.petri.generic.net.Data;
 
 /**
  *

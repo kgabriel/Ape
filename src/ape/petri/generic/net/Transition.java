@@ -11,30 +11,24 @@ import ape.util.aml.AMLNode;
  * @author Gabriel
  */
 public class Transition extends Node {
-  /** the data of this transition */
-  protected TransitionData data;
 
   public Transition(Net net, TransitionData data) {
-    super(net);
-    this.data = data;
+    super(net, data);
   }
   
+  @Override
   public TransitionData getData() {
-    return data;
-  }
-
-  public void setData(TransitionData data) {
-    this.data = data;
+    return (TransitionData) super.getData();
   }
 
   @Override
-  public EnumElementType getElementType() {
-    return EnumElementType.Transition;
+  public EnumNetElementType getElementType() {
+    return EnumNetElementType.Transition;
   }
 
   @Override
   public String toString() {
-    return data.name;
+    return getData().name;
   }
 
   @Override
@@ -45,7 +39,7 @@ public class Transition extends Node {
   @Override
   public AMLNode getAMLNode() {
     AMLNode node = super.getAMLNode();
-    node.addChild(data.getAMLNode());
+    node.addChild(getData().getAMLNode());
     return node;
   }
 
@@ -53,6 +47,6 @@ public class Transition extends Node {
   public void readAMLNode(AMLNode node) {
     super.readAMLNode(node);
     AMLNode dataNode = node.getFirstChild("Data");
-    data.readAMLNode(dataNode);
+    getData().readAMLNode(dataNode);
   }
 }

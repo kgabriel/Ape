@@ -6,39 +6,38 @@ package ape.ui.control;
 
 import ape.Ape;
 import ape.ui.control.commands.Command;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import ape.ui.control.commands.CommandProvider;
+import ape.util.aml.AMLNode;
+import ape.util.aml.AMLWritable;
+import java.util.*;
 
 /**
  *
  * @author Gabriel
  */
-public class CommandManager {
+public class CommandManager implements AMLWritable {
   
   private Ape theApe;
+  public CommandProvider commandProvider;
   
   /**
    * A map, associating command receiver types with currently active receivers of that type.
    */
   private Map<EnumCommandReceiverType, Collection<CommandReceiver>> receivers;
   
-  /**
-   * A map, associating command invocation types with commands that are available for that type,
-   * and can be activated by associating it with a specific binding.
-   */
-  private Map<EnumInvocationType,Collection<Command>> availableCommands;
-  
   /** A map, associating invocation bindings with commands in two layers: Every binding
    *  maps to another map that in turn maps binding modifiers to associated commands.
    */
-  private Map<CommandBinding,Map<CommandBindingModifier,Collection<Command>>> activeCommands;
+  private Map<CommandBinding,Map<CommandBindingModifier,Set<Command>>> activeCommands;
+  
+  /** A set of commands that are available but currently not active */
+  private Set<Command> inactiveCommands;
   
   private Map<CommandReceiver,CommandListener> commandListeners;
   
   public CommandManager(Ape ape) {
     theApe = ape;
+    commandProvider = new CommandProvider();
     init();
   }
   
@@ -51,11 +50,8 @@ public class CommandManager {
     for(EnumCommandReceiverType type : EnumCommandReceiverType.values()) {
       receivers.put(type, new HashSet<CommandReceiver>());
     }
-    availableCommands = new HashMap<>(EnumInvocationType.numberOfTypes());
-    for(EnumInvocationType type : EnumInvocationType.values()) {
-      availableCommands.put(type, new HashSet<Command>());
-    }
     activeCommands = new HashMap<>();
+    inactiveCommands = new HashSet<>();
     commandListeners = new HashMap<>();
   }
   
@@ -84,19 +80,6 @@ public class CommandManager {
   }
   
   /**
-   * Registers a command to be available. Available commands can be activated by associating
-   * it to a specific invocation binding.
-   * @param com the command to be available for activation
-   */
-  public void addCommand(Command com) {
-    for(EnumInvocationType type : EnumInvocationType.values()) {
-      if(com.invokedBy(type)) {
-        availableCommands.get(type).add(com);
-      }
-    }
-  }
-  
-  /**
    * Activates a command by associating it with a specific invocation binding.
    * @param binding the invocation binding, the command is to be invoked on
    * @param com the command to be activated
@@ -104,6 +87,7 @@ public class CommandManager {
   public void activateCommand(Command com, CommandBinding binding, CommandBindingModifier modifier) {
     Collection<Command> associatedCommands = getOrCreateAssociatedCommands(binding, modifier);
     associatedCommands.add(com);
+    inactiveCommands.remove(com);
     System.out.println(binding.toUserFriendlyString(modifier) + " " + com);
   }
   
@@ -131,12 +115,12 @@ public class CommandManager {
    * @return 
    */
   private Collection<Command> getOrCreateAssociatedCommands(CommandBinding binding, CommandBindingModifier modifier) {
-    Map<CommandBindingModifier,Collection<Command>> associatedModifiers = activeCommands.get(binding);
+    Map<CommandBindingModifier,Set<Command>> associatedModifiers = activeCommands.get(binding);
     if(associatedModifiers == null) {
       associatedModifiers = new HashMap<>();
       activeCommands.put(binding,associatedModifiers);
     }
-    Collection<Command> associatedCommands = associatedModifiers.get(modifier);
+    Set<Command> associatedCommands = associatedModifiers.get(modifier);
     if(associatedCommands == null) {
       associatedCommands = new HashSet<>();
       associatedModifiers.put(modifier, associatedCommands);
@@ -162,14 +146,22 @@ public class CommandManager {
    */
   public boolean deactivateCommand(Command com, CommandBinding binding, CommandBindingModifier modifier, boolean changing) {
     if(! changing && com.isAlwaysActive()) return false;
+    System.out.println("Command is allowed to be deactivated...");
 
-    Map<CommandBindingModifier,Collection<Command>> associatedModifiers = activeCommands.get(binding);
+    Map<CommandBindingModifier,Set<Command>> associatedModifiers = activeCommands.get(binding);
     if(associatedModifiers == null) return false;
+    System.out.println("Found associated binding...");
 
     Collection<Command> associatedCommands = associatedModifiers.get(modifier);
     if(associatedCommands == null) return false;
+    System.out.println("Found associated modifier...");
 
-    return associatedCommands.remove(com);
+    boolean removed = associatedCommands.remove(com);
+    if(removed) {
+      inactiveCommands.add(com);
+    }
+    System.out.println("Found associated command...");
+    return removed;
   }
 
   /**
@@ -196,15 +188,69 @@ public class CommandManager {
     CommandBinding binding = e.getBinding();
     int eventModifiers = e.getInputEvent().getModifiersEx();
 
-    Map<CommandBindingModifier,Collection<Command>> associatedCommands = activeCommands.get(binding);
+    Map<CommandBindingModifier,Set<Command>> associatedCommands = activeCommands.get(binding);
     if(associatedCommands == null) return;
-
     
     for(CommandBindingModifier comModifiers : associatedCommands.keySet()) {
       if(comModifiers.fitsToModifiers(eventModifiers)) {
         for(Command com : associatedCommands.get(comModifiers)) {
           com.invoke(e, theApe);
         }
+      }
+    }
+  }
+
+  @Override
+  public String getAMLTagName() {
+    return "CommandManager";
+  }
+
+  /**
+   * Stores all activated and inactive commands with their bindings (if existent) in a node. 
+   * The node contains no more information than that.
+   * @return a node containing all command bindings of the commands that are currently activated
+   */
+  @Override
+  public AMLNode getAMLNode() {
+    AMLNode node = new AMLNode(getAMLTagName());
+    for(CommandBinding binding : activeCommands.keySet()) {
+      Map<CommandBindingModifier, Set<Command>> bindingMap = activeCommands.get(binding);
+      for(CommandBindingModifier modifier : bindingMap.keySet()) {
+        for(Command command : bindingMap.get(modifier)) {
+          AMLNode commandNode = new AMLNode("Command");
+          commandNode.putAttribute("Name", command.getName());
+          commandNode.putAttribute("Active", true);
+          commandNode.addChild(binding.getAMLNode());
+          commandNode.addChild(modifier.getAMLNode());
+          node.addChild(commandNode);
+        }
+      }
+    }
+    for(Command command : inactiveCommands) {
+      AMLNode commandNode = new AMLNode("Command");
+      commandNode.putAttribute("Name", command.getName());
+      commandNode.putAttribute("Active", false);
+      node.addChild(commandNode);
+    }
+    return node;
+  }
+
+  /**
+   * Reads commands from a node and activates them, if there is a command binding.
+   * @param node a node containing command bindings
+   */
+  @Override
+  public void readAMLNode(AMLNode node) {
+    for(AMLNode commandNode : node.getChildren("Command")) {
+      Command command = commandProvider.getCommand(commandNode.getAttribute("Name"));
+      if(commandNode.getAttributeBoolean("Active")) {
+        CommandBinding binding = new CommandBinding(EnumInvocationType.KeyPress, EnumCommandReceiverType.Global, 0);
+        binding.readAMLNode(commandNode.getFirstChild(binding.getAMLTagName()));
+        CommandBindingModifier modifier = new CommandBindingModifier();
+        modifier.readAMLNode(commandNode.getFirstChild(modifier.getAMLTagName()));
+        activateCommand(command, binding, modifier);
+      } else {
+        inactiveCommands.add(command);
       }
     }
   }

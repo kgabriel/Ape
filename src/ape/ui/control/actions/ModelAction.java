@@ -7,16 +7,16 @@ package ape.ui.control.actions;
 import ape.Ape;
 import ape.org.ModelStorage;
 import ape.petri.generic.Model;
-import ape.ui.graphics.modelview.generic.ModelView;
+import ape.ui.graphics.modelview.ModelView;
 
 /**
  *
  * @author Gabriel
  */
-public abstract class GlobalModelAction extends GlobalAction {
+public abstract class ModelAction extends Action {
   
-  public GlobalModelAction(Ape theApe) {
-    super(theApe);
+  public ModelAction(Ape theApe, String name) {
+    super(theApe, name);
   }
   
   protected Model getModel() {

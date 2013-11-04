@@ -22,6 +22,8 @@ public interface Command {
   public void invoke(CommandEvent e, Ape ape);
 
   public boolean invokedBy(EnumInvocationType invocationType);
+  
+  public boolean canUserDefineInvocationBinding();
 
   public boolean receivedBy(EnumCommandReceiverType receiverType);
   

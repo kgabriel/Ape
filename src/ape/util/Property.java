@@ -4,18 +4,16 @@
  */
 package ape.util;
 
-import java.io.Serializable;
-
 /**
  *
  * @author Gabriel
  */
-public abstract class Property implements Comparable<Property>, Serializable {
+public abstract class Property implements Comparable<Property> {
 
   protected Object object;
   private EnumPropertyType type;
   private String key;
-  private boolean editable;
+  protected boolean editable;
   private String category;
 
   public static final String CATEGORY_PROPERTIES = "Properties";
@@ -29,12 +27,12 @@ public abstract class Property implements Comparable<Property>, Serializable {
    * @param key the key/name of this property
    * @param editable <code>true</code> if this property can be edited by the user
    */
-  public Property(String category, Object object, EnumPropertyType type, String key, boolean editable) {
+  public Property(String category, Object object, EnumPropertyType type, String key) {
     this.category = category;
     this.object = object;
     this.type = type;
     this.key = key;
-    this.editable = editable;
+    this.editable = true;
   }
 
   public String getCategory() {

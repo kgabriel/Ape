@@ -4,6 +4,7 @@
  */
 package ape.ui.graphics.modelview;
 
+import ape.petri.generic.EnumModelType;
 import ape.util.EnumIcon;
 import javax.swing.ImageIcon;
 
@@ -13,16 +14,18 @@ import javax.swing.ImageIcon;
  */
 public enum EnumModelViewAction {
   
-  Selection("Select", "Select Elements", EnumIcon.Selection),
-  NewPlace("New Place", "Create a new Place", EnumIcon.Place),
-  NewTransition("New Transition", "Create a new Transition", EnumIcon.Transition),
-  NewArc("New Arc", "Create a new Arc", EnumIcon.Arc);
+  NetSelection(EnumModelType.Net, "Select", "Select Elements", EnumIcon.Selection),
+  NetNewPlace(EnumModelType.Net, "New Place", "Create a new Place", EnumIcon.Place),
+  NetNewTransition(EnumModelType.Net, "New Transition", "Create a new Transition", EnumIcon.Transition),
+  NetNewArc(EnumModelType.Net, "New Arc", "Create a new Arc", EnumIcon.Arc);
 
+  private EnumModelType modelType;
   private String name;
   private String description;
   private EnumIcon icon;
 
-  EnumModelViewAction(String name, String description, EnumIcon icon) {
+  EnumModelViewAction(EnumModelType modelType, String name, String description, EnumIcon icon) {
+    this.modelType = modelType;
     this.name = name;
     this.description = description;
     this.icon = icon;
@@ -38,5 +41,9 @@ public enum EnumModelViewAction {
 
   public String getName() {
     return name;
+  }
+  
+  public EnumModelType getModelType() {
+    return modelType;
   }
 }

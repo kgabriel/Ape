@@ -10,12 +10,8 @@ import ape.petri.generic.net.*;
  *
  * @author Gabriel
  */
-public class PTDataFactory extends DataFactory {
+public class PTDataFactory extends NetElementDataFactory {
 
-  public PTDataFactory(Net net) {
-    super(net);
-  }
-  
     /**
    * Creates a default place data for the net type of this factory.
    * @return a new data for a place, containing a name <i>"Place i"</i>, where <i>i</i> is a number incrementing
@@ -43,6 +39,11 @@ public class PTDataFactory extends DataFactory {
   @Override
   public ArcElementData createDefaultArcElementData() {
     return new PTArcElementData();
+  }
+
+  @Override
+  public ArcCollectionData createDefaultArcCollectionData() {
+    return new PTArcCollectionData();
   }
 
 }

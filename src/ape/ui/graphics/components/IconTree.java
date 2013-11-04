@@ -48,6 +48,7 @@ public class IconTree extends JTree implements TreeSelectionListener {
   }
   
   private void traverseAndExpandImplicitly(IconTreeNode node) {
+    if(node == null) return;
     if(node.isExpanded()) expandNode(node);
     Enumeration children = node.children();
     while(children.hasMoreElements()) {

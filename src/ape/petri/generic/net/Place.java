@@ -16,43 +16,32 @@ import ape.util.aml.AMLNode;
  */
 public class Place extends Node {
   
-  /** the data of this place */
-  protected PlaceData data;
-  
   /**
    * A new Place in the given net, with the specified data.
    * @param net the net to contain this place
    * @param data the data of this place
    */
   public Place(Net net, PlaceData data) {
-    super(net);
-    this.data = data;
+    super(net, data);
   }
   
   /**
    * Get the data of this place.
    * @return the place's <code>data</code>-object
    */
+  @Override
   public PlaceData getData() {
-    return data;
+    return (PlaceData) super.getData();
   }
   
-  /**
-   * Set the data of this place.
-   * @param data the data to be set
-   */
-  public void setData(PlaceData data) {
-    this.data = data;
-  }
-
   @Override
-  public EnumElementType getElementType() {
-    return EnumElementType.Place;
+  public EnumNetElementType getElementType() {
+    return EnumNetElementType.Place;
   }
 
   @Override
   public String toString() {
-    return data.name;
+    return getData().name;
   }
 
   @Override
@@ -63,7 +52,7 @@ public class Place extends Node {
   @Override
   public AMLNode getAMLNode() {
     AMLNode node = super.getAMLNode();
-    node.addChild(data.getAMLNode());
+    node.addChild(getData().getAMLNode());
     return node;
   }
 
@@ -71,6 +60,6 @@ public class Place extends Node {
   public void readAMLNode(AMLNode node) {
     super.readAMLNode(node);
     AMLNode dataNode = node.getFirstChild("Data");
-    data.readAMLNode(dataNode);
+    getData().readAMLNode(dataNode);
   }
 }

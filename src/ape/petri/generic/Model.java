@@ -7,15 +7,13 @@ package ape.petri.generic;
 import ape.petri.validity.Validity;
 import ape.util.aml.AMLNode;
 import ape.util.aml.AMLWritable;
-import java.awt.Color;
-import java.io.Serializable;
 import java.util.Collection;
 
 /**
  *
  * @author Gabriel
  */
-public abstract class Model implements Serializable, AMLWritable {
+public abstract class Model implements AMLWritable {
   
   /** the next free Id in this model */
   private int freeId;
@@ -82,6 +80,4 @@ public abstract class Model implements Serializable, AMLWritable {
     modelType = EnumModelType.valueOf(node.getAttribute("modelType"));
     netType = EnumNetType.valueOf(node.getAttribute("netType"));
   }
-  
-  
 }

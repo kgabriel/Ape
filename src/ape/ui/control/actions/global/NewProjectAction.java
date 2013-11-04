@@ -6,20 +6,20 @@ package ape.ui.control.actions.global;
 
 import ape.Ape;
 import ape.org.ProjectStorage;
-import ape.ui.control.actions.GlobalAction;
+import ape.ui.control.actions.Action;
 
 /**
  *
  * @author Gabriel
  */
-public class NewProjectAction extends GlobalAction {
+public class NewProjectAction extends Action {
 
   public NewProjectAction(Ape theApe) {
-    super(theApe);
+    super(theApe, "New Project");
   }
 
   @Override
-  public void invoke() {
+  protected void onInvocation() {
     ProjectStorage newProject = new ProjectStorage();
     theApe.projects.addStorage(newProject);
     theApe.projects.setActiveStorage(newProject);

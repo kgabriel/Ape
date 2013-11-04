@@ -7,21 +7,21 @@ package ape.ui.control.actions.global;
 import ape.Ape;
 import ape.org.ModelStorage;
 import ape.org.ProjectStorage;
-import ape.ui.control.actions.GlobalAction;
+import ape.ui.control.actions.Action;
 import ape.util.IO;
 
 /**
  *
  * @author Gabriel
  */
-public class SaveModelAction extends GlobalAction {
+public class SaveModelAction extends Action {
 
   public SaveModelAction(Ape theApe) {
-    super(theApe);
+    super(theApe, "Save Model");
   }
 
   @Override
-  public void invoke() {
+  protected void onInvocation() {
     ProjectStorage activeProject = theApe.projects.getActiveStorage();
     if(activeProject == null) return;
     ModelStorage activeModel = activeProject.getActiveStorage();

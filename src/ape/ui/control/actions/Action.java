@@ -4,6 +4,7 @@
  */
 package ape.ui.control.actions;
 
+import ape.Ape;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -14,14 +15,34 @@ import javax.swing.Icon;
  */
 public abstract class Action {
   
-  public abstract void invoke();
+  protected Ape theApe;
+  private String name;
+  
+  public Action(Ape theApe, String name) {
+    this.theApe = theApe;
+    this.name = name;
+  }
+  
+  public String getName() {
+    return name;
+  }
+  
+  public void invoke() {
+    onInvocation();
+  }
+  
+  protected abstract void onInvocation();
   
   public javax.swing.Action getSwingAction() {
-    return getSwingAction(null, null);
+    return getSwingAction(this.name, null);
   }
   
   public javax.swing.Action getSwingAction(String name) {
     return getSwingAction(name, null);
+  }
+  
+  public javax.swing.Action getSwingAction(Icon icon) {
+    return getSwingAction(this.name, icon);
   }
   
   public javax.swing.Action getSwingAction(String name, Icon icon) {

@@ -22,7 +22,7 @@ public class AHLArcElementData extends ArcElementData {
     
   /**
    * Creates a new arc data element for an AHL-net with specified inscription.
-   * @param inscriptionVariable the <code>String</code> representation of the inscription
+   * @param inscription the <code>String</code> representation of the inscription
    * variable of this <code>ArcElement</code>
    */
   public AHLArcElementData(String inscription) {
@@ -34,7 +34,7 @@ public class AHLArcElementData extends ArcElementData {
    * @param inscription the inscription of this arc element given as Prolog atom
    */
   public AHLArcElementData(Atom inscription) {
-    super(EnumNetType.AHLNet);
+    super();
     this.inscription = inscription;
   }
   
@@ -45,18 +45,6 @@ public class AHLArcElementData extends ArcElementData {
 
   public void setInscription(Atom inscription) {
     this.inscription = inscription;
-  }
-
-  /**
-   * Checks compatibility of this arc data with another one.
-   * @param ad the arc data to check compatibility with
-   * @return <code>true</code> if the other element is of type <code>AHLArcElementData</code>
-   * and the inscription equals the inscription of this element.
-   */
-  @Override
-  public boolean isCompatibleWith(ArcElementData ad) {
-    if(! (ad instanceof AHLArcElementData)) return false;
-    return inscription.equals(((AHLArcElementData) ad).inscription);
   }
 
   @Override

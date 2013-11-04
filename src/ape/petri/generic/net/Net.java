@@ -4,11 +4,8 @@
  */
 package ape.petri.generic.net;
 
-import ape.petri.generic.EnumNetType;
 import ape.petri.exception.ArcException;
-import ape.petri.generic.EnumModelType;
-import ape.petri.generic.Model;
-import ape.petri.generic.ModelElement;
+import ape.petri.generic.*;
 import ape.util.aml.AMLNode;
 import java.util.*;
 
@@ -49,25 +46,21 @@ public abstract class Net extends Model {
   /** the arcs of this net, stored in a map, where the keys are {@link SimpleArc}s */
   protected Map<SimpleArc,ArcCollection> arcs;
   
-  /** the factory providing net elements for this net's net type */
-  protected NetElementFactory factory;
+  /** the factory providing net element's data for this net's net type */
+  protected NetElementDataFactory factory;
     
   /**
    * Constructor that should be called by every concrete net implementation. 
    * @param netType the net type of this net
    */
-  public Net(EnumNetType netType) {
+  public Net(EnumNetType netType, NetElementDataFactory factory) {
     super(EnumModelType.Net, netType);
     places = new HashSet<>();
     transitions = new HashSet<>();
     arcs = new HashMap<>();
-    initFactory();
+    this.factory = factory;
   }
   
-  private void initFactory() {
-    factory = new NetElementFactory(this);
-  }
-
   @Override
   public Collection<ModelElement> getAllElements() {
     int size = places.size() + transitions.size() + arcs.values().size();
@@ -127,17 +120,17 @@ public abstract class Net extends Model {
    * @return the newly created place
    */
   public Place addPlace(PlaceData data) {
-    return addPlace(factory.createPlace(data));
+    return addPlace(new Place(this, data));
   }
   
   /**
    * Adds a new place to this net with default data for the type of this net.
    * @return the newly created place
-   * @see Net#addPlace(ape.petri.generic.PlaceData) 
+   * @see Net#addPlace(ape.petri.generic.net.PlaceData) 
    * @see NetElementFactory#createDefaultPlaceData() 
    */
   public Place addDefaultPlace() {
-    return addPlace(factory.createDefaultPlace());
+    return addPlace(factory.createDefaultPlaceData());
   }
   
   private Place addPlace(Place p) {
@@ -151,17 +144,17 @@ public abstract class Net extends Model {
    * @return the newly created transition
    */
   public Transition addTransition(TransitionData data) {
-    return addTransition(factory.createTransition(data));
+    return addTransition(new Transition(this,data));
   }
   
   /**
    * Adds a new transition to this net with default data for the type of this net.
    * @return the newly created transition
-   * @see Net#addTransition(ape.petri.generic.TransitionData) 
+   * @see Net#addTransition(ape.petri.generic.net.TransitionData) 
    * @see NetElementFactory#createDefaultTransition() 
    */
   public Transition addDefaultTransition() {
-    return addTransition(factory.createDefaultTransition());
+    return addTransition(factory.createDefaultTransitionData());
   }
   
   private Transition addTransition(Transition t) {
@@ -181,7 +174,7 @@ public abstract class Net extends Model {
     SimpleArc simArc = new SimpleArc(p,t,dir);
     ArcCollection collection = arcs.get(simArc);
     if(collection == null) {
-      collection = new ArcCollection(this,p,t,dir);
+      collection = new ArcCollection(this,p,t,dir,factory.createDefaultArcCollectionData());
       arcs.put(simArc,collection);
     }
     return collection;
@@ -201,7 +194,7 @@ public abstract class Net extends Model {
   public ArcCollection addArc(Place p, Transition t, EnumArcDirection direction, ArcElementData data) {
     checkArcNet(p,t);
     ArcCollection collection = getOrCreateArcCollection(p,t,direction);
-    return addArc(collection, factory.createArcElement(collection, data));
+    return addArc(collection, new ArcElement(collection, data));
   }
   
   /**
@@ -209,13 +202,13 @@ public abstract class Net extends Model {
    * @param p the place of the arc
    * @param t the transition of the arc
    * @return the collection, containing the the newly created arc in this net
-   * @see Net#addArc(ape.petri.generic.Place, ape.petri.generic.Transition, ape.petri.generic.EnumArcDirection, ape.petri.generic.ArcElementData) 
-   * @see NetElementFactory#createDefaultArcElementData(ape.petri.generic.ArcCollection) 
+   * @see Net#addArc(ape.petri.generic.net.Place, ape.petri.generic.net.Transition, ape.petri.generic.net.EnumArcDirection, ape.petri.generic.net.ArcElementData) 
+   * @see NetElementFactory#createDefaultArcElementData() 
    */
   public ArcCollection addDefaultArc(Place p, Transition t, EnumArcDirection direction) {
     checkArcNet(p,t);
     ArcCollection collection = getOrCreateArcCollection(p,t,direction);
-    return addArc(collection, factory.createDefaultArcElement(collection));
+    return addArc(collection, new ArcElement(collection, factory.createDefaultArcElementData()));
   }
   
   /** 
@@ -274,7 +267,7 @@ public abstract class Net extends Model {
   /**
    * Removes a {@link Place} from this net. This involves removing it from this
    * net's {@link Net#places} set, as well as removing all arcs that are connected to it
-   * using the {@link Net#removeArcCollection(ape.petri.generic.ArcCollection)} method.
+   * using the {@link Net#removeArcCollection(ape.petri.generic.net.ArcCollection)} method.
    * @param p the place to be removed
    * @return <code>true</code> if <code>p</code> actually was a part of this net
    */
@@ -292,7 +285,7 @@ public abstract class Net extends Model {
   /**
    * Removes a {@link Transition} from this net. This involves removing it from this
    * net's {@link Net#transitions} set, as well as removing all arcs that are connected to it
-   * using the {@link Net#removeArcCollection(ape.petri.generic.ArcCollection)} method.
+   * using the {@link Net#removeArcCollection(ape.petri.generic.net.ArcCollection)} method.
    * @param t the transition to be removed
    * @return <code>true</code> if <code>t</code> actually was a part of this net
    */
@@ -305,18 +298,6 @@ public abstract class Net extends Model {
       removeArcCollection(outgoing);
     }
     return transitions.remove(t);
-  }
-
-  public TransitionData createDefaultTransitionData() {
-    return factory.createDefaultTransitionData();
-  }
-
-  public PlaceData createDefaultPlaceData() {
-    return factory.createDefaultPlaceData();
-  }
-
-  public ArcElementData createDefaultArcElementData() {
-    return factory.createDefaultArcElementData();
   }
   
   public ArcCollection getArcCollectionById(int id) {
@@ -376,19 +357,18 @@ public abstract class Net extends Model {
   @Override
   public void readAMLNode(AMLNode node) {
     super.readAMLNode(node);
-    factory = new NetElementFactory(this);
     for(AMLNode placeNode : node.getChildren("Place")) {
-      Place place = factory.createDefaultPlace();
+      Place place = new Place(this, factory.createDefaultPlaceData());
       place.readAMLNode(placeNode);
       addPlace(place);
     }
     for(AMLNode transitionNode : node.getChildren("Transition")) {
-      Transition transition = factory.createDefaultTransition();
+      Transition transition = new Transition(this,factory.createDefaultTransitionData());
       transition.readAMLNode(transitionNode);
       addTransition(transition);
     }
     for(AMLNode arcNode : node.getChildren("ArcCollection")) {
-      ArcCollection arc = new ArcCollection(this, null, null, EnumArcDirection.PT);
+      ArcCollection arc = new ArcCollection(this, null, null, EnumArcDirection.PT, factory.createDefaultArcCollectionData());
       arc.readAMLNode(arcNode);
       addArcCollection(arc);
     }

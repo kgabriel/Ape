@@ -6,20 +6,20 @@ package ape.ui.control.actions.ahlinstantiation;
 
 import ape.Ape;
 import ape.petri.ahl.instantiation.AHLInstantiation;
-import ape.ui.control.actions.GlobalModelAction;
+import ape.ui.control.actions.ModelAction;
 
 /**
  *
  * @author Gabriel
  */
-public class GetSolutionAction extends GlobalModelAction {
+public class GetSolutionAction extends ModelAction {
 
   public GetSolutionAction(Ape theApe) {
-    super(theApe);
+    super(theApe, "Get Solution");
   }
 
   @Override
-  public void invoke() {
+  protected void onInvocation() {
     final AHLInstantiation inst = (AHLInstantiation) getModel();
 
     boolean success = inst.getPrologNet().getSolution();

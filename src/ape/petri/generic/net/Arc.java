@@ -4,13 +4,11 @@
  */
 package ape.petri.generic.net;
 
-import java.io.Serializable;
-
 /**
  * An arc is something that connects a place and a transition and has a direction.
  * @author Gabriel
  */
-public interface Arc extends Serializable {
+public interface Arc {
 
   /**
    * Get the place of this arc.

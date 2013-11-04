@@ -5,15 +5,16 @@
 package ape.petri.ahl.instantiation;
 
 import ape.petri.ahl.AHLPlaceData;
-import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.Place;
-import ape.petri.generic.net.PlaceData;
 import ape.petri.validity.EnumInvalidityType;
 import ape.petri.validity.InvalidityReason;
 import ape.petri.validity.Validity;
 import ape.prolog.Atom;
 import ape.prolog.ValueTerm;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import ape.util.aml.AMLNode;
+import java.util.List;
 
 /**
  *
@@ -21,46 +22,61 @@ import ape.util.aml.AMLNode;
  */
 public class AHLInstPlaceData extends AHLPlaceData {
 
-  private ValueTerm value;
+  private ValueTerm placeValue;
   
   public AHLInstPlaceData(String name, Atom type, ValueTerm value) {
     super(name, type);
-    setNetType(EnumNetType.AHLInstantiation);
-    this.value = value;
+    this.placeValue = value;
   }
   
   public AHLInstPlaceData(String name, String type, String value) {
     this(name, new Atom(type), (value == null) ? null : new ValueTerm(value));
   }
 
-  public ValueTerm getValue() {
-    return value;
+  public ValueTerm getPlaceValue() {
+    return placeValue;
   }
 
-  public void setValue(ValueTerm value) {
-    this.value = value;
+  public void setPlaceValue(ValueTerm value) {
+    this.placeValue = value;
     dataHasChanged();
   }
 
-  @Override
-  public boolean isCompatibleWith(PlaceData pd) {
-    if(! (pd instanceof AHLInstPlaceData)) return false;
-    AHLInstPlaceData data = (AHLInstPlaceData) pd;
-    if(! this.getType().equals(data.getType())) return false;
-    return this.value.equals(data.value);
-  }
-  
   public Validity validate(Place parent) {
-    if(value != null) return new Validity(true);
+    if(placeValue != null) return new Validity(true);
     Validity invalid = new Validity(false);
     invalid.addInvalidityReason(new InvalidityReason(EnumInvalidityType.InstPlaceUnassigned, "Place '" + parent.toString() + "'"));
     return invalid;
   }
 
   @Override
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+    properties.add(new Property(Property.CATEGORY_VALUES, this, EnumPropertyType.SingleLineText, "Value") {
+
+      @Override
+      public Object getValue() {
+        ValueTerm value = getPlaceValue();
+        if(value == null) return ValueTerm.unassignedString;
+        return value.toString();
+      }
+
+      @Override
+      public void setValue(Object value) {
+        if(value.equals(ValueTerm.unassignedString)) {
+          setPlaceValue(null);
+        } else {
+          setPlaceValue(new ValueTerm((String) value));
+        }
+      }
+    });
+    return properties;
+  }
+
+  @Override
   public AMLNode getAMLNode() {
     AMLNode node = super.getAMLNode();
-    if(value != null) node.putAttribute("value", value.toString());
+    if(placeValue != null) node.putAttribute("value", placeValue.toString());
     return node;
   }
 
@@ -68,7 +84,7 @@ public class AHLInstPlaceData extends AHLPlaceData {
   public void readAMLNode(AMLNode node) {
     super.readAMLNode(node);
     String valueString = node.getAttribute("value");
-    if(valueString != null) value = new ValueTerm(valueString);
+    if(valueString != null) placeValue = new ValueTerm(valueString);
   }
   
   

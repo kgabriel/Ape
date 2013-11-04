@@ -15,7 +15,7 @@ import ape.petri.validity.Validity;
 public class PTNet extends Net {
   
   public PTNet() {
-    super(EnumNetType.PTNet);    
+    super(EnumNetType.PTNet, new PTDataFactory());    
   }
 
   @Override

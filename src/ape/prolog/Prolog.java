@@ -6,6 +6,7 @@ package ape.prolog;
 
 import ape.Ape;
 import ape.prolog.exception.PrologParserException;
+import ape.util.ResourceIO;
 import java.net.URL;
 import java.util.*;
 import jpl.Query;
@@ -18,7 +19,7 @@ import jpl.Util;
  */
 public class Prolog {
     
-  public static void initialize() {
+  static {
     consultResource("prolog/modules/net.pl");
     consultResource("prolog/modules/data.pl");
     consultResource("prolog/modules/wave.pl");
@@ -30,8 +31,7 @@ public class Prolog {
   }
   
   public static boolean consultResource(String res) {
-    URL resURL = Ape.class.getResource(res);
-    return consultFile(resURL.getFile());
+    return consultFile(ResourceIO.getResourcePath(res));
   }
     
   public static Atom[] parseAtomSequence(String input) {
@@ -174,7 +174,7 @@ public class Prolog {
         string += "]";
         return string;
       } else {
-        return compound.name() + "(" + termSequenceToString(compound.args()) + ")";
+        return compound.toString();//compound.name() + "(" + termSequenceToString(compound.args()) + ")";
       }
     } else {
       return t.toString();

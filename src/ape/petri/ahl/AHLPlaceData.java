@@ -4,10 +4,12 @@
  */
 package ape.petri.ahl;
 
-import ape.petri.generic.EnumNetType;
 import ape.petri.generic.net.PlaceData;
 import ape.prolog.Atom;
+import ape.util.EnumPropertyType;
+import ape.util.Property;
 import ape.util.aml.AMLNode;
+import java.util.List;
 
 /**
  *
@@ -33,7 +35,7 @@ public class AHLPlaceData extends PlaceData {
    * @param type the type of this place given as Prolog atom
    */
   public AHLPlaceData(String name, Atom type) {
-    super(EnumNetType.AHLNet,name);  
+    super(name);  
     this.type = type;
   }
   
@@ -46,16 +48,26 @@ public class AHLPlaceData extends PlaceData {
     dataHasChanged();
   }
 
-  /**
-   * Checks compatibility of this place data with another one.
-   * @param pd the place data to check compatibility with
-   * @return <code>true</code> if the type of the other place equals the type of this place
-   */
   @Override
-  public boolean isCompatibleWith(PlaceData pd) {
-    if(! (pd instanceof AHLPlaceData)) return false;
-    return type.equals(((AHLPlaceData) pd).type);
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+    properties.add(new Property(Property.CATEGORY_VALUES, this, EnumPropertyType.SingleLineText, "Type") {
+
+      @Override
+      public Object getValue() {
+        return type.toString();
+      }
+
+      @Override
+      public void setValue(Object value) {
+        Atom atom = new Atom((String) value);
+        setType(atom);
+      }
+    });
+    return properties;
   }
+  
+  
 
   @Override
   public AMLNode getAMLNode() {

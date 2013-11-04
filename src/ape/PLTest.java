@@ -4,7 +4,6 @@
  */
 package ape;
 
-import ape.prolog.Prolog;
 import java.util.Hashtable;
 import jpl.Query;
 import jpl.Term;

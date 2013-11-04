@@ -7,6 +7,7 @@ package ape.ui.graphics;
 import ape.ui.UI;
 import ape.util.Property;
 import java.util.*;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -148,26 +149,31 @@ public class PropertyTableModel extends DefaultTableModel {
     Property prop = getPropertyAt(row);
     if(prop == null) return;
 
-    switch(prop.getType()) {
-      case String:
-        prop.setValue(value);
-        break;
-      case Integer:
-        if(value instanceof Integer) {
-          prop.setValue(value);
-        } else {
-          prop.setValue(Integer.parseInt((String) value));
-        }
-        break;
-      case Interval:
-        if(value instanceof Double) {
-          prop.setValue(value);
-        } else {
-          prop.setValue(Double.parseDouble((String) value));
-        }
-        break;
+    try {
+      switch(prop.getType()) {
+        case SingleLineText:
+        case MultiLineText:
+            prop.setValue(value);
+          break;
+        case Integer:
+          if(value instanceof Integer) {
+            prop.setValue(value);
+          } else {
+              prop.setValue(Integer.parseInt((String) value));
+          }
+          break;
+        case Interval:
+          if(value instanceof Double) {
+            prop.setValue(value);
+          } else {
+            prop.setValue(Double.parseDouble((String) value));
+          }
+          break;
+      }
+    } catch(Exception e) {
+      JOptionPane.showMessageDialog(ui.mainFrame, "Illegal input: " + value.toString(), "Input Error", JOptionPane.ERROR_MESSAGE);
     }
-    
+
     ui.getModelViewCanvas().repaint();
   }
 }

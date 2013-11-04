@@ -4,20 +4,12 @@
  */
 package ape.ui.graphics.modelview;
 
-import ape.petri.generic.net.EnumElementType;
-import ape.petri.generic.net.Transition;
-import ape.petri.generic.net.Place;
-import ape.petri.generic.net.EnumArcDirection;
-import ape.petri.generic.net.ArcCollection;
-import ape.petri.generic.net.Net;
-import ape.petri.generic.*;
+import ape.petri.generic.ModelElement;
 import ape.petri.generic.net.*;
 import ape.ui.UI;
 import ape.ui.graphics.components.IconTree;
 import ape.ui.graphics.components.IconTreeNode;
-import ape.ui.graphics.modelview.generic.ModelView;
 import ape.ui.graphics.modelview.generic.Visual;
-import ape.ui.graphics.modelview.generic.VisualListener;
 import ape.util.EnumIcon;
 import java.awt.BorderLayout;
 import java.util.Collection;
@@ -27,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
@@ -38,9 +29,10 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
   
   UI ui;
   IconTree tree;
-  Map<EnumElementType,IconTreeNode> typeRoots;
+  Map<EnumNetElementType,IconTreeNode> typeRoots;
   Map<ModelElement,IconTreeNode> elementNodes;
   Map<IconTreeNode,ModelElement> nodeElements;
+  Map<IconTreeNode,IconTreeNode> arcNodeParents;
   
   public ModelTreeView(UI ui) {
     this.ui = ui;
@@ -48,6 +40,7 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
     this.typeRoots = new HashMap<>();
     this.elementNodes = new HashMap<>();
     this.nodeElements = new HashMap<>();
+    this.arcNodeParents = new HashMap<>();
     init();
   }
   
@@ -92,13 +85,13 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
     Collection<Place> places = net.getPlaces();
     Collection<Transition> transitions = net.getTransitions();
     IconTreeNode placeRoot = tree.addNode("Places", EnumIcon.PlacesSmall);
-    typeRoots.put(EnumElementType.Place, placeRoot);
+    typeRoots.put(EnumNetElementType.Place, placeRoot);
     for(Place p : places) {
       addNodeByElement(p);
     }
     placeRoot.setExpanded(true);
     IconTreeNode transitionRoot = tree.addNode("Transitions",EnumIcon.TransitionsSmall);
-    typeRoots.put(EnumElementType.Transition, transitionRoot);
+    typeRoots.put(EnumNetElementType.Transition, transitionRoot);
     for(Transition t : transitions) {
       IconTreeNode transitionNode = addNodeByElement(t);
       transitionNode.isExpanded();
@@ -113,7 +106,7 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
   }
   
   private String nodeCaptionByElement(ModelElement element) {
-    EnumElementType type = element.getElementType();
+    EnumNetElementType type = element.getElementType();
     switch(type) {
       case Place:
         Place p = (Place) element;
@@ -134,10 +127,11 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
     EnumArcDirection dir = arc.getDirection();
     int index = (dir == EnumArcDirection.PT ? 0 : 1);
     IconTreeNode parent = (IconTreeNode) elementNodes.get(t).getChildAt(index);
-    EnumIcon icon = EnumIcon.fromElementType(EnumElementType.Place, true);
+    EnumIcon icon = EnumIcon.fromElementType(EnumNetElementType.Place, true);
     IconTreeNode node = tree.addNode(parent, caption, icon);
     elementNodes.put(arc, node);
     nodeElements.put(node,arc);
+    arcNodeParents.put(node,parent);
     return parent;
   }
   
@@ -147,8 +141,8 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
    * @return the parent node, this element was added to
    */
   private IconTreeNode addNodeByElement(ModelElement element) {
-    EnumElementType type = element.getElementType();
-    if(type == EnumElementType.ArcCollection) {
+    EnumNetElementType type = element.getElementType();
+    if(type == EnumNetElementType.ArcCollection) {
       return addArcNode((ArcCollection) element);
     }
     
@@ -160,7 +154,7 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
     elementNodes.put(element, node);
     nodeElements.put(node,element);
     
-    if(type == EnumElementType.Transition) {
+    if(type == EnumNetElementType.Transition) {
       tree.addNode(node, "Pre Arcs", EnumIcon.fromArcDirection(EnumArcDirection.PT, true));
       tree.addNode(node, "Post Arcs", EnumIcon.fromArcDirection(EnumArcDirection.TP, true));
     }
@@ -171,15 +165,18 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
   /**
    * 
    * @param element
-   * @return the parent node, this element was added to
+   * @return the parent node, this element was removed from
    */
   private IconTreeNode removeNodeByElement(ModelElement element) {
-    EnumElementType type = element.getElementType();
+    EnumNetElementType type = element.getElementType();
     IconTreeNode node = elementNodes.remove(element);
     if(node == null) return null;
     nodeElements.remove(null);
     IconTreeNode parent = typeRoots.get(type);
-    if(parent == null) return null;
+    if(parent == null) {
+      parent = arcNodeParents.get(node);
+      if(parent == null) return null;
+    }
     parent.remove(node);
     return parent;
   }
@@ -210,6 +207,8 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
       node.setUserObject(((Transition) e).getData().getName());
     } else if (e instanceof ArcCollection) {
       node.setUserObject(((ArcCollection) e).getPlace().getData().getName());
+    } else {
+      throw new UnsupportedOperationException("Update of tree view not yet implemented for model element of type " + e.getElementType());
     }
     tree.refresh(node);
   }
@@ -217,10 +216,7 @@ public class ModelTreeView extends JPanel implements ModelViewListener, TreeSele
   @Override
   public void valueChanged(TreeSelectionEvent e) {
     IconTreeNode node = (IconTreeNode) tree.getLastSelectedPathComponent();
-    if(typeRoots.containsValue(node)) {
-//      tree.expandNode(node);
-      return;
-    }
+    if(typeRoots.containsValue(node)) return;
     ModelElement m = nodeElements.get(node);
     if(m == null) return;
     ModelView modelView = ui.getActiveModelView();

@@ -4,24 +4,20 @@
  */
 package ape.petri.generic.net;
 
-import java.io.Serializable;
-
 /**
  *
  * @author Gabriel
  */
-public abstract class DataFactory implements Serializable {
+public abstract class NetElementDataFactory {
   
-  private Net net;
   private int nextPlaceNumber;
   private int nextTransitionNumber;
   
-  public DataFactory(Net net) {
-    this.net = net;
+  public NetElementDataFactory() {
     nextPlaceNumber = 1;
     nextTransitionNumber = 1;
   }
- 
+  
   /**
    * Creates a default place data for the net type of this factory.
    * @return a new data for a place
@@ -41,6 +37,12 @@ public abstract class DataFactory implements Serializable {
    * @return a new arc element data with default content
    */
   public abstract ArcElementData createDefaultArcElementData();
+  
+  /**
+   * Creates a default arc collection data for the net type of this factory.
+   * @return a new arc collection data with default content
+   */
+  public abstract ArcCollectionData createDefaultArcCollectionData();
   
   protected String nextPlaceName() {
     return "Place " + nextPlaceNumber++;

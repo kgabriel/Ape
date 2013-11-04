@@ -27,11 +27,11 @@ import java.util.Set;
  */
 public class AHLInstantiation extends Net {
   
-  private transient PrologNet prologNet = null;
+  private PrologNet prologNet = null;
   private int prologNetNumber;
     
   public AHLInstantiation() {
-    super(EnumNetType.AHLInstantiation);    
+    super(EnumNetType.AHLInstantiation, new AHLInstDataFactory());    
     this.prologNetNumber = 0;
   }
 

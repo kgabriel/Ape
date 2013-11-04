@@ -4,12 +4,12 @@
  */
 package ape.ui.control;
 
+import ape.ui.control.commands.Command;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.HashSet;
-import ape.ui.control.commands.Command;
 
 /**
  * The different invocation types of a command. A command can have different invocation types.

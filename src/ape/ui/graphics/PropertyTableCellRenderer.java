@@ -33,7 +33,7 @@ public class PropertyTableCellRenderer implements TableCellRenderer {
     }
     
     /* get type of property and if it is editable*/
-    EnumPropertyType type = EnumPropertyType.String;
+    EnumPropertyType type = EnumPropertyType.SingleLineText;
     boolean editable = false;
     if(column == 1) {
       Property prop = tableModel.getPropertyAt(row);
@@ -50,7 +50,8 @@ public class PropertyTableCellRenderer implements TableCellRenderer {
         return createSlider(value, editable);
       case Integer:
         return createLabel(value, JLabel.RIGHT, evenRow, hasFocus, editable);
-      case String:
+      case SingleLineText:
+      case MultiLineText:
       default:
         return createLabel(value, JLabel.LEFT, evenRow, hasFocus, editable);
     }
@@ -70,7 +71,7 @@ public class PropertyTableCellRenderer implements TableCellRenderer {
    String text = (content != null ? content.toString() : ""); 
     label.setText(text);
     label.setToolTipText(text);
-    label.setBorder(new EmptyBorder(3, 3, 3, 3));
+    label.setBorder(new EmptyBorder(5, 5, 5, 5));
     label.setHorizontalAlignment(alignment);
     if(hasFocus) {
       if(editable) {
@@ -92,7 +93,7 @@ public class PropertyTableCellRenderer implements TableCellRenderer {
     JLabel label = new JLabel();
     label.setOpaque(true); 
     label.setToolTipText(category);
-    label.setBorder(new EmptyBorder(3, 1, 3, 3));
+    label.setBorder(new EmptyBorder(5, 1, 5, 5));
     label.setBackground(new Color(200,200,200));
     if(firstColumn) {
       label.setText(category);

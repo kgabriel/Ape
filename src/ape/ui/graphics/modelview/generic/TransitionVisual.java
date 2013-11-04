@@ -5,36 +5,34 @@
 package ape.ui.graphics.modelview.generic;
 
 import ape.petri.generic.net.Data;
-import ape.petri.generic.net.DataChangeListener;
-import ape.petri.generic.net.Transition;
+import ape.petri.generic.DataChangeListener;
+import ape.petri.generic.net.TransitionData;
 import ape.util.EnumPropertyType;
 import ape.util.Property;
 import ape.util.aml.AMLNode;
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
+import java.util.List;
 
 /**
  *
  * @author Gabriel
  */
 public abstract class TransitionVisual extends NodeVisual implements DataChangeListener {
-  protected Transition transition;
   protected TextVisual nameVisual;
   private int nameHeight;
   private int dataHeight;
   protected TextVisual dataVisual;
   protected TextVisual extendedDataVisual;
 
-  public TransitionVisual(Graphics2D superGraphics, Transition transition) {
-    this(superGraphics, new Point(0,0), transition);
+  public TransitionVisual(Graphics2D superGraphics, TransitionData data, int modelElementId) {
+    this(superGraphics, new Point(0,0), data, modelElementId);
   }
 
-  public TransitionVisual(Graphics2D superGraphics, Point position, Transition transition) {
-    super(superGraphics);
+  public TransitionVisual(Graphics2D superGraphics, Point position, TransitionData data, int modelElementId) {
+    super(superGraphics, data, modelElementId);
     setResizable(true,false);
-    setTransition(transition);
     this.nameVisual = new TextVisual(superGraphics);
     addChild(nameVisual);
     nameVisual.setCompact(false);
@@ -54,11 +52,12 @@ public abstract class TransitionVisual extends NodeVisual implements DataChangeL
     setSize(VisualGlobalValues.transitionWidth, 0);
     updateContent();
     updateSize();
-    initProperties();
   }
   
-  private void initProperties() {
-    addProperty(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "Width", true) {
+  @Override
+  public List<Property> getProperties() {
+    List<Property> properties = super.getProperties();
+    properties.add(new Property(Property.CATEGORY_VIEW, this, EnumPropertyType.Integer, "Width") {
      @Override
       public Object getValue() {
         return getWidth();
@@ -72,29 +71,9 @@ public abstract class TransitionVisual extends NodeVisual implements DataChangeL
         updateOnUserResize();
       }
     });
+    return properties;
   }
   
-  
-  private void setTransition(Transition transition) {
-    this.transition = transition;
-    transition.getData().addDataChangeListener(this);
-  }
-
-  @Override
-  public String getDataName() {
-    return transition.getData().getName();
-  }
-
-  @Override
-  public void setDataName(String name) {
-    transition.getData().setName(name);
-  }
-
-  @Override
-  public int getNodeId() {
-    return transition.getId();
-  } 
-
   private void updateLocation() {
     int x = getX();
     int y = getY();
@@ -104,7 +83,7 @@ public abstract class TransitionVisual extends NodeVisual implements DataChangeL
   }
   
   protected void updateContent() {
-    String transitionName = transition.getData().getName();
+    String transitionName = ((TransitionData) data).getName();
     nameVisual.setText(transitionName);
     updateDataVisualContent();
     updateExtendedDataVisualContent();
@@ -153,7 +132,7 @@ public abstract class TransitionVisual extends NodeVisual implements DataChangeL
   }
 
   @Override
-  protected void updateOnResize() {
+  public void updateOnResize() {
     int width = getWidth();
     nameVisual.setSize(width, 0);
     nameVisual.updateOnResize();
@@ -165,7 +144,7 @@ public abstract class TransitionVisual extends NodeVisual implements DataChangeL
   }
 
   @Override
-  protected void updateOnMove() {
+  public void updateOnMove() {
     updateLocation();
   }
 
@@ -175,15 +154,13 @@ public abstract class TransitionVisual extends NodeVisual implements DataChangeL
     }
   }
   @Override
-  protected void updateOnUserMove() {
+  public void updateOnUserMove() {
     notifyArcsOnMoveAndResize();
   }
 
   @Override
-  protected void updateOnUserMoveFinished() {}
-
-  @Override
-  protected void updateOnUserResize() {
+  public void updateOnUserResize() {
+    super.updateOnUserResize();
     notifyArcsOnMoveAndResize();
   }
   
@@ -197,6 +174,10 @@ public abstract class TransitionVisual extends NodeVisual implements DataChangeL
   @Override
   public Shape getShape() {
     return getBounds();
+  }
+  
+  public String getTransitionName() {
+    return ((TransitionData) data).getName();
   }
   
   @Override

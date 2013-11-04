@@ -4,10 +4,9 @@
  */
 package ape.ui.graphics.modelview.ahl;
 
+import ape.petri.ahl.AHLArcCollectionData;
 import ape.petri.ahl.AHLArcElementData;
-import ape.prolog.exception.PrologParserException;
-import ape.petri.generic.net.ArcCollection;
-import ape.petri.generic.net.ArcElement;
+import ape.petri.generic.net.ArcCollectionData;
 import ape.petri.generic.net.ArcElementData;
 import ape.petri.generic.net.EnumArcDirection;
 import ape.prolog.Prolog;
@@ -15,8 +14,6 @@ import ape.ui.graphics.modelview.generic.ArcVisual;
 import ape.ui.graphics.modelview.generic.PlaceVisual;
 import ape.ui.graphics.modelview.generic.TextVisual;
 import ape.ui.graphics.modelview.generic.TransitionVisual;
-import ape.util.EnumPropertyType;
-import ape.util.Property;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,55 +25,19 @@ import ape.prolog.Atom;
  */
 public class AHLArcVisual extends ArcVisual {
 
-  public AHLArcVisual(Graphics2D superGraphics, PlaceVisual pv, TransitionVisual tv, EnumArcDirection dir, ArcCollection arc) {
-    super(superGraphics, pv, tv, dir, arc);
-    initProperties();
+  public AHLArcVisual(Graphics2D superGraphics, PlaceVisual pv, TransitionVisual tv, EnumArcDirection dir, AHLArcCollectionData data, int modelElementId) {
+    super(superGraphics, pv, tv, dir, data, modelElementId);
+    updateLabelContent();
   }
   
-  private void initProperties() {
-    addProperty(new Property(Property.CATEGORY_VALUES, this, EnumPropertyType.String, "Inscriptions", true) {
-
-      @Override
-      public Object getValue() {
-        Collection<ArcElementData> dataCollection = arc.getData().getDataElements();
-        Collection<Atom> atoms = new ArrayList<>(dataCollection.size());
-        for(ArcElementData data : dataCollection) {
-          atoms.add(((AHLArcElementData) data).getInscription());
-        }
-        return Prolog.toString(atoms);
-      }
-
-      @Override
-      public void setValue(Object value) {
-        String string = (String) value;
-        Atom[] atoms = null;
-        try {
-          atoms = Prolog.parseAtomSequence(string);
-        } catch(PrologParserException e) {
-          System.err.println(e);
-        }
-
-        arc.clear();
-        if(atoms != null) {
-          for(Atom a : atoms) {
-            AHLArcElementData data = (AHLArcElementData) arc.getNet().createDefaultArcElementData();
-            data.setInscription(a);
-            arc.addFreshElement(new ArcElement(arc, data));
-          }
-        }
-        updateLabelContent();
-      }
-    });
-  }
-
   @Override
   protected void updateLabelContent() {
     TextVisual label = getLabel();
 
-    Collection<ArcElementData> dataCollection = arc.getData().getDataElements();
+    Collection<ArcElementData> dataCollection = ((ArcCollectionData) data).getDataElements();
     Collection<Atom> atoms = new ArrayList<>(dataCollection.size());
-    for(ArcElementData data : dataCollection) {
-      atoms.add(((AHLArcElementData) data).getInscription());
+    for(ArcElementData elementData : dataCollection) {
+      atoms.add(((AHLArcElementData) elementData).getInscription());
     }
     String sequence = Prolog.toString(atoms);
     
